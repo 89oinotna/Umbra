@@ -1,16 +1,16 @@
-package com.oinotna.umbra.ui.notifications;
+package com.oinotna.umbra.ui.mouse;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class NotificationsViewModel extends ViewModel {
+public class MouseViewModel extends ViewModel {
 
     private MutableLiveData<String> mText;
 
-    public NotificationsViewModel() {
+    public MouseViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("This is notifications fragment");
+        mText.setValue("This is mouse fragment");
     }
 
     public LiveData<String> getText() {

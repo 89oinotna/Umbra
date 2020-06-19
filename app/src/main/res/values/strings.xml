@@ -1,6 +1,13 @@
 <resources>
     <string name="app_name">Umbra</string>
     <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_mouse">Mouse</string>
+    <string name="title_settings">Settings</string>
+
+    <!-- Home Fragment -->
+    <string name="search_button">Search</string>
+
+    <!-- Preference Titles -->
+    <string name="mouse_header">Mouse Settings</string>
+
 </resources>
