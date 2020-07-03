@@ -1,22 +1,40 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory app:title="@string/mouse_header">
 
         <SeekBarPreference
             android:id="@+id/mouse_sensitivity"
+            app:key="mouse_sensitivity"
             android:max="100"
+            app:defaultValue="50"
             app:min="1"
-            app:showSeekBarValue="true">
+            app:showSeekBarValue="true"
+            android:summary="mouse sensitivity">
 
         </SeekBarPreference>
         <SeekBarPreference
+            app:key="wheel_sensitivity"
             android:id="@+id/wheel_sensitivity"
             android:max="100"
             app:min="1"
-            app:showSeekBarValue="true">
-
-        </SeekBarPreference>
+            app:defaultValue="50"
+            app:showSeekBarValue="true"
+            android:summary="wheel sensitivity"/>
+        <SeekBarPreference
+            app:key="sensor_sensitivity"
+            android:id="@+id/sensor_sensitivity"
+            android:max="100"
+            app:min="1"
+            app:defaultValue="50"
+            app:showSeekBarValue="true"
+            android:summary="sensor sensitivity"/>
+        <SwitchPreference
+            android:id="@+id/use_sensor"
+            android:defaultValue="false"
+            android:summary="use sensor"
+            app:key="use_sensor" />
 
 
     </PreferenceCategory>

@@ -1,27 +1,43 @@
 package com.oinotna.umbra.ui.home;
 
-import android.widget.ArrayAdapter;
+import android.app.Application;
 
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
-import com.oinotna.umbra.R;
+import com.oinotna.umbra.db.ServerPc;
+import com.oinotna.umbra.db.ServerPcRepository;
+import com.oinotna.umbra.thread.Finder;
+import com.oinotna.umbra.thread.MyInterruptThread;
 
+import java.io.IOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 
-public class HomeViewModel extends ViewModel {
+public class HomeViewModel extends AndroidViewModel {
+    private MyInterruptThread thFinder;
 
-    MutableLiveData<Boolean> serversLiveData; //livedata che uso solo per far triggerare gli observer
-    //TODO cuncurrent hashmap
-    ArrayList<ServerPc> serversList;    //lista contenente i server che trovo durante la ricerca
+    private MutableLiveData<Boolean> serversLiveData; //livedata che uso solo per far triggerare gli observer
+    //TODO cuncurrent hashmap??
+    private ArrayList<ServerPc> serversList;    //lista contenente i server che trovo durante la ricerca
 
-    public HomeViewModel() {
+    private ServerPcRepository mServerPcRepository;
+
+    public HomeViewModel(Application application) {
+        super(application);
+
         serversLiveData = new MutableLiveData<>();
         serversList = new ArrayList<>();
         serversLiveData.setValue(true);
+        mServerPcRepository=new ServerPcRepository(application);
+
     }
 
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+    }
 
     public LiveData<Boolean> getLiveServersList() {
         return serversLiveData;
@@ -31,10 +47,40 @@ public class HomeViewModel extends ViewModel {
         return serversList;
     }
 
-    /**
-     * Per triggerare gli observer sul livedata
-     */
-    public void postServer(){
+    public void searchForServers(InetAddress broadcast)  {
+        //clear recycler view
+        serversList.clear();
         serversLiveData.postValue(true);
+
+        if(thFinder==null){
+            try {
+                thFinder=new MyInterruptThread(new Finder(broadcast, serversList, serversLiveData));
+                thFinder.start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        else{
+            thFinder.interrupt();
+            thFinder=null;
+            searchForServers(broadcast);
+        }
+    }
+
+    /**
+     * Termina il thread in ascolto dei server
+     */
+    public void endSearch() {
+        if(thFinder!=null)
+            thFinder.interrupt();
+        thFinder=null;
+    }
+
+    public LiveData<ServerPc> getPC(String name) {
+        return mServerPcRepository.getPc(name);
+    }
+
+    public void storePc(ServerPc pc) {
+        mServerPcRepository.insert(pc);
     }
 }

@@ -8,7 +8,10 @@
     <androidx.cardview.widget.CardView
         android:id="@+id/cv_server"
         android:layout_width="110dp"
-        android:layout_height="110dp" >
+        android:layout_height="110dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackground" ><!-- ?android:attr attributo specificato nel tema -->
 
 
         <RelativeLayout

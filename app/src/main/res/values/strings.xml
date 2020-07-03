@@ -10,4 +10,12 @@
     <!-- Preference Titles -->
     <string name="mouse_header">Mouse Settings</string>
 
+    <string name="password">Password</string>
+
+    <!-- Toast -->
+    <string name="toast_wrong_password">Wrong Password</string>
+    <string name="toast_cant_connect">Can\'t Connect</string>
+    <string name="no_barcode_detected">No Barcode Detected</string>
+
+
 </resources>
