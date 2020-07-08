@@ -10,12 +10,11 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Finder implements RunnableWithSocket {
-    private int portPc=4511;
+    private int portPc=4513;
     private int portFinder=4513;
 
     private InetAddress broadcast;

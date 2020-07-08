@@ -12,9 +12,8 @@ import com.oinotna.umbra.mouse.Mouse;
 import com.oinotna.umbra.mouse.MouseControl;
 import com.oinotna.umbra.mouse.MouseSocket;
 
+import java.io.IOException;
 import java.net.SocketException;
-
-import javax.crypto.SecretKey;
 
 public class MouseViewModel extends ViewModel implements MouseControl {
 
@@ -33,7 +32,7 @@ public class MouseViewModel extends ViewModel implements MouseControl {
     @Override
     protected void onCleared() {
         super.onCleared();
-        disconnect();
+        //disconnect();
     }
 
     public LiveData<Byte> getConnection() {
@@ -47,10 +46,10 @@ public class MouseViewModel extends ViewModel implements MouseControl {
      * @throws SocketException
      */
     //todo è utile avere boolean?
-    public boolean connect(ServerPc pc) throws SocketException {
+    public boolean connect(ServerPc pc) throws IOException {
 
         //Se mi voglio connettere allo stesso
-        if(mouse!=null &&
+        if(mouse!=null && mConnection.getValue()!=null &&
                 (mConnection.getValue() == MouseSocket.CONNECTED_PASSWORD || mConnection.getValue() == MouseSocket.CONNECTED)
                 && mouse.getPc().getName().equals(pc.getName())){
             mConnection.postValue(mConnection.getValue());
@@ -62,7 +61,7 @@ public class MouseViewModel extends ViewModel implements MouseControl {
         if(mouse!=null)
             mouse.close();
         mouse = new Mouse(pc, mConnection);
-        mouse.tryConnection();
+        //mouse.tryConnection();
         return true;
     }
 
@@ -92,7 +91,7 @@ public class MouseViewModel extends ViewModel implements MouseControl {
     @Override
     public boolean wheel(MotionEvent action) {
         if(mouse!=null)
-        return mouse.wheel(action);
+            return mouse.wheel(action);
         return false;
     }
 
@@ -119,7 +118,7 @@ public class MouseViewModel extends ViewModel implements MouseControl {
         this.useSensor=sensor;
     }
 
-    public boolean getSensor(){
+    public boolean usingSensor(){
         return useSensor;
     }
 
@@ -144,19 +143,21 @@ public class MouseViewModel extends ViewModel implements MouseControl {
     }
 
     public boolean isConnected() {
-        if(mConnection.getValue() != null &&
-                (mConnection.getValue()== MouseSocket.CONNECTED || mConnection.getValue()==MouseSocket.CONNECTED_PASSWORD)){
-            return true;
-        }
-        return false;
+        return mConnection.getValue() != null &&
+                (mConnection.getValue() == MouseSocket.CONNECTED || mConnection.getValue() == MouseSocket.CONNECTED_PASSWORD);
     }
 
     public void disconnect() {
         if(mouse!=null){
             mouse.close();
-            mConnection.postValue(MouseSocket.DISCONNECTED);
             pc=null;
             mouse=null;
         }
+        /*if(mConnection.getValue()!=null && mConnection.getValue()!=MouseSocket.DISCONNECTED)
+            mConnection.postValue(MouseSocket.DISCONNECTED);*/
+    }
+
+    public void postDisconnect(){
+        mConnection.postValue(MouseSocket.DISCONNECTED);
     }
 }

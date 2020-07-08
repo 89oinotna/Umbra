@@ -1,7 +1,6 @@
 package com.oinotna.umbra.db;
 
 import android.app.Application;
-import android.os.Looper;
 
 import androidx.lifecycle.LiveData;
 

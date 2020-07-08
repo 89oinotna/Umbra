@@ -1,7 +1,7 @@
 package com.oinotna.umbra.ui.home;
 
-import android.app.Notification;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -13,7 +13,6 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
@@ -21,6 +20,8 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.vectordrawable.graphics.drawable.Animatable2Compat;
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.oinotna.umbra.R;
@@ -31,8 +32,8 @@ import com.oinotna.umbra.ui.mouse.MouseViewModel;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Base64;
 
 public class HomeFragment extends Fragment implements View.OnClickListener, ServersAdapter.onItemClickListner, Observer<Byte>, ServersAdapter.onMenuItemClickListener{
 
@@ -41,6 +42,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
     private RecyclerView rv;
     private RecyclerView.LayoutManager lm;
     private ArrayList<ServerPc> serversList;
+
+    private AnimatedVectorDrawableCompat loadingAnimation;
 
     private MouseViewModel mouseViewModel;
     private DialogPasswordViewModel dialogPasswordViewModel;
@@ -55,7 +58,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
         Button btnSearch = root.findViewById(R.id.btn_search);
         btnSearch.setOnClickListener(this);
 
-        homeViewModel = new ViewModelProvider(requireActivity()).get(HomeViewModel.class);
+        homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
         serversList = homeViewModel.getServersList();
 
         lm=new GridLayoutManager(getContext(), 3);
@@ -66,7 +69,26 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
         mAdapter.setOnMenuItemClickListener(this);
         rv.setAdapter(mAdapter);
         rv.setNestedScrollingEnabled(true);
+        /*loadingAnimation =  AnimatedVectorDrawableCompat.create(requireContext(), R.drawable.avd_anim);
+        rv.setBackground(loadingAnimation);
+        loadingAnimation.registerAnimationCallback(new Animatable2Compat.AnimationCallback() {
+            @Override
+            public void onAnimationEnd(Drawable drawable) {
+                super.onAnimationEnd(drawable);
+                loadingAnimation.start();
+            }
+        });
+        loadingAnimation.start();*/
         //registerForContextMenu(rv);
+
+        WifiManager wifiManager = (WifiManager) requireActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        if (wifiManager!=null && wifiManager.isWifiEnabled()) {
+        }
+        else{
+            serversList.clear();
+            mAdapter.notifyDataSetChanged(); //se rimane qualcosa la tolgo
+            Toast.makeText(getContext(), "Connect to WIFI", Toast.LENGTH_SHORT).show();
+        }
 
         //mi permette di aggiornare la recycler view
         //uso serverpc solo per triggerare notifyDataSetChanged
@@ -88,6 +110,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
      */
     @Override
     public void onClick(View v) {
+
         if(v.getId()==(R.id.btn_search)){
             WifiManager wifiManager = (WifiManager) requireActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             if (wifiManager!=null && wifiManager.isWifiEnabled()) {
@@ -100,6 +123,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
                 }
             }
             else{
+                serversList.clear();
+                mAdapter.notifyDataSetChanged(); //se rimane qualcosa la tolgo
                 Toast.makeText(getContext(), "Connect to WIFI", Toast.LENGTH_SHORT).show();
             }
 
@@ -117,7 +142,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
         homeViewModel.endSearch();
         try {
             mouseViewModel.connect(pc);
-        }catch (SocketException e){
+        }catch (IOException e){
+            e.printStackTrace();
             Toast.makeText(requireActivity(), R.string.toast_cant_connect, Toast.LENGTH_SHORT).show();
         }
     }
@@ -174,9 +200,20 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
         pc.observe(getViewLifecycleOwner(), new Observer<ServerPc>() {
             @Override
             public void onChanged(ServerPc serverPc) {
-                //serverpc has aes encrypted base64 password
+
+                //serverpc has the base64 of the aes encrypted password
                 if(serverPc!=null){
-                    mouseViewModel.usePassword(serverPc.getPassword());
+                    //todo encrypt?
+                    String encryptedBase64=serverPc.getPassword();
+                    byte[] decoded;
+                    // get base64 encoded version of the key
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                        decoded = Base64.getDecoder().decode(encryptedBase64);
+                    }
+                    else{
+                        decoded = android.util.Base64.decode(encryptedBase64, android.util.Base64.DEFAULT);
+                    }
+                    mouseViewModel.usePassword(secretKeyViewModel.decrypt(decoded));
                 }
                 //se non è presente devo chiedere la password
                 else {
@@ -186,8 +223,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
                         @Override
                         public void onChanged(String s) {
                             ServerPc pc=mouseViewModel.getPc();
-                            pc.setPassword(secretKeyViewModel.encrypt(s.getBytes()));
-                            homeViewModel.storePc(pc); //salvo nel db
+                            ServerPc store=new ServerPc(pc.getName(), pc.getIp());
+                            store.setPassword(secretKeyViewModel.encrypt(s.getBytes()));
+                            homeViewModel.storePc(store); //salvo nel db
                             mouseViewModel.usePassword(s); //riprovo la connessione con la password
                             dialogPasswordViewModel.getPassword().removeObserver(this);
                         }

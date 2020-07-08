@@ -30,8 +30,6 @@ import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 import com.oinotna.umbra.R;
 import com.oinotna.umbra.SecretKeyViewModel;
-import com.oinotna.umbra.db.ServerPc;
-import com.oinotna.umbra.ui.mouse.MouseViewModel;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -40,7 +38,6 @@ public class PasswordDialog extends DialogFragment implements SurfaceHolder.Call
 
     //private MouseViewModel mouseViewModel;
     //private HomeViewModel homeViewModel;
-    private SecretKeyViewModel secretKeyViewModel;
     private DialogPasswordViewModel dialogPasswordViewModel;
 
     private SurfaceView surfaceView;
@@ -61,11 +58,7 @@ public class PasswordDialog extends DialogFragment implements SurfaceHolder.Call
 
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
 
-        secretKeyViewModel = new ViewModelProvider(requireActivity()).get(SecretKeyViewModel.class);
-
-        assert this.getParentFragment() != null;
-
-        //mouseViewModel.getConnection().observe(getViewLifecycleOwner(), this);
+       //mouseViewModel.getConnection().observe(getViewLifecycleOwner(), this);
 
         // Get the layout inflater
         LayoutInflater inflater = requireActivity().getLayoutInflater();

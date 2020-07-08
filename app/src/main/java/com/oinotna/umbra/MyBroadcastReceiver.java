@@ -14,7 +14,6 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
     public MyBroadcastReceiver(OnReceiveListener mListener){
         this.mListener=mListener;
-
     }
 
     @Override

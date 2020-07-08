@@ -6,41 +6,49 @@
     android:layout_height="match_parent"
     tools:context=".ui.mouse.MouseFragment">
 
-    <Button
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.MaterialComponents.Button.TextButton"
         android:id="@+id/btn_mouse_pad"
-        style="@style/Widget.AppCompat.Button.Borderless"
         android:layout_width="416dp"
         android:layout_height="666dp"
+        app:layout_constraintBottom_toTopOf="@+id/btn_mouse_left"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:rippleColor="#00ffffff"
+        />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_mouse_left"
-        android:layout_width="194dp"
-        android:layout_height="71dp"
-        android:text="Button"
+        android:layout_width="195dp"
+        android:layout_height="75dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/btn_mouse_right"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:rippleColor="#00ffffff"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_mouse_right"
-        android:layout_width="199dp"
-        android:layout_height="65dp"
-        android:text="Button"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:layout_width="195dp"
+        android:layout_height="75dp"
+        app:layout_constraintBottom_toBottomOf="@id/btn_mouse_left"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btn_mouse_left"
+        app:rippleColor="#00ffffff"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_mouse_wheel"
         android:layout_width="78dp"
         android:layout_height="320dp"
         android:layout_marginTop="172dp"
         android:layout_marginEnd="4dp"
-        android:text="Button"
+        android:layout_marginBottom="169dp"
+        app:layout_constraintBottom_toTopOf="@+id/btn_mouse_right"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:rippleColor="#00ffffff"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

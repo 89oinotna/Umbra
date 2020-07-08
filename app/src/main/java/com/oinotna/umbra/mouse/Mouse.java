@@ -6,9 +6,8 @@ import android.view.MotionEvent;
 import androidx.lifecycle.MutableLiveData;
 
 import com.oinotna.umbra.db.ServerPc;
-import com.oinotna.umbra.thread.MyInterruptThread;
 
-import java.net.SocketException;
+import java.io.IOException;
 
 public class Mouse implements MouseControl {
 
@@ -22,7 +21,7 @@ public class Mouse implements MouseControl {
     public static byte SENSOR_MOVE=0x07;
 
     private MouseSocket socket;
-    private MyInterruptThread thSocket;
+    private Thread thSocket;
 
     private float[] lastWheel;
     private float[] lastPad;
@@ -33,7 +32,7 @@ public class Mouse implements MouseControl {
     private float sensorSensitivity;
 
 
-    public Mouse(ServerPc pc, MutableLiveData<Byte> mConnection) throws SocketException {
+    public Mouse(ServerPc pc, MutableLiveData<Byte> mConnection) throws IOException {
         //todo single thread executor per run di mousesocket???
         this.lastWheel=new float[]{-1,-1};
         this.lastPad=new float[]{-1,-1};
@@ -41,17 +40,17 @@ public class Mouse implements MouseControl {
 
         //creo il socket i mi metto in ascolto
         this.socket=new MouseSocket(pc, mConnection);
-        this.thSocket=new MyInterruptThread(socket);
+        this.thSocket=new Thread(socket);
         this.thSocket.start();
     }
 
     public void tryConnection(){
-        this.socket.tryConnection();
+       this.socket.tryConnection();
     }
 
     public void close() {
         socket.disconnect();
-        thSocket.interruptOnly();
+        thSocket.interrupt();
     }
 
     @Override
@@ -111,6 +110,8 @@ public class Mouse implements MouseControl {
         return true;
     }
 
+    private long timestap;
+
     @Override
     public boolean move(MotionEvent event) {
         switch (event.getAction()){
@@ -118,6 +119,7 @@ public class Mouse implements MouseControl {
                 //initialize the point
                 lastPad[0]=event.getX();
                 lastPad[1]=event.getY();
+                timestap=System.currentTimeMillis();
             case MotionEvent.ACTION_MOVE:
                 // new position
                 final float x = event.getX();
@@ -132,6 +134,10 @@ public class Mouse implements MouseControl {
                 break;
             case MotionEvent.ACTION_UP:
                 //reset (do i need this?)
+                if(System.currentTimeMillis()-timestap<100){
+                    socket.push(LEFT_DOWN);
+                    socket.push(LEFT_UP);
+                }
                 lastPad[0]=-1;
                 lastPad[1]=-1;
                 break;

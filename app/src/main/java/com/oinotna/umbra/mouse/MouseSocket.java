@@ -5,20 +5,22 @@ import android.util.Log;
 import androidx.lifecycle.MutableLiveData;
 
 import com.oinotna.umbra.db.ServerPc;
-import com.oinotna.umbra.thread.RunnableWithSocket;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.net.SocketException;
+import java.net.Socket;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -28,7 +30,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-public class MouseSocket implements RunnableWithSocket {
+public class MouseSocket implements Runnable {
     //todo header object
 
     private ServerPc pc;
@@ -36,17 +38,16 @@ public class MouseSocket implements RunnableWithSocket {
     private SecretKey k;
 
     private MutableLiveData<Byte> mConnection;
-    private Executor executor;
+    private ExecutorService executor;
     private InetAddress ipAddress;
 
-    private int portPc=4511;
-    private int portApp=4512;
+    private int portPc=4513;
+    private int portConnectionPc=4512;
+    //private int portApp=4512;
 
     //connection request
     public static byte CONNECTION=0x04;
     public static byte CONNECTION_PASSWORD=0x05;
-    public static byte DISCONNECT=0x06;
-    public static byte DISCONNECT_PASSWORD=0x07;
 
     //Connection status
     public static byte CONNECTED=0x01;
@@ -59,16 +60,13 @@ public class MouseSocket implements RunnableWithSocket {
     public static byte WRONG_PASSWORD=0x06;
 
 
-    private DatagramSocket socket;
+    private DatagramSocket socketUdp;
+    private Socket socketTcp;
 
-    public DatagramSocket getSocket() {
-        return socket;
-    }
 
     public ServerPc getPc() {
         return  pc;
     }
-
 
     private class Command{
         private byte[] command;
@@ -124,7 +122,6 @@ public class MouseSocket implements RunnableWithSocket {
                 //todo store iv safely in sharedprefs instead of hardcoded
                 IvParameterSpec ivSpec = new IvParameterSpec("1111111111111111".getBytes());
                 cipher.init(Cipher.ENCRYPT_MODE, k, ivSpec);
-                //todo criptare da [3] byte in poi
                 byte[] tmp=new byte[command.length-1];
                 System.arraycopy(command, 1, tmp, 0, tmp.length);
                 tmp = cipher.doFinal(tmp);
@@ -138,38 +135,11 @@ public class MouseSocket implements RunnableWithSocket {
         }
     }
 
-    public void disconnect() {
-        //TODO password
-        if (mConnection.getValue() == null) {
-            return;
-        }
-        else if (mConnection.getValue() == CONNECTED
-                || mConnection.getValue() == CONNECTED_PASSWORD) {
-            executor.execute(() -> {
-                try {
-                    byte[] s = new byte[]{MouseSocket.DISCONNECT};
-                    DatagramPacket dp = new DatagramPacket(s, s.length, ipAddress, portPc);
-                    socket.send(dp);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    mConnection.postValue(CONNECTION_ERROR);
-                }
-                socket.close();
-            });
-        /*}else if(mConnection.getValue()==CONNECTED){
-            push(DISCONNECT_PASSWORD);
-        }*/
-        }
-        else{
-            socket.close();
-        }
-    }
-
-    public MouseSocket(ServerPc pc, MutableLiveData<Byte> mConnection) throws SocketException {
+    public MouseSocket(ServerPc pc, MutableLiveData<Byte> mConnection) throws IOException {
         this.mConnection=mConnection;
         this.pc=pc;
-        this.socket=new DatagramSocket(portApp);
-        this.executor= Executors.newCachedThreadPool();
+        this.socketUdp=new DatagramSocket();
+        this.executor= Executors.newSingleThreadExecutor();
     }
 
     /**
@@ -178,23 +148,34 @@ public class MouseSocket implements RunnableWithSocket {
      */
     public void tryConnection() {
         executor.execute(() -> {
-            try {
-                //se è la prima connessione risolvo l'indirizzo
-                if(ipAddress==null){
-                    ipAddress= Inet4Address.getByName(pc.getIp());
-                }
+            OutputStream writer = null;
+            try{
+                writer=socketTcp.getOutputStream();
                 if(pc.getPassword()!=null){
                     this.k=generateKeyFromBase64(pc.getPassword());
                 }
                 //genero il comando per la connessione
                 byte[] s = new Command(pc.getPassword(), k).command;
-                DatagramPacket dp = new DatagramPacket(s, s.length, ipAddress, portPc);
-                socket.send(dp);
+                writer.write(s);
             } catch (IOException e) {
                 e.printStackTrace();
-                mConnection.postValue(CONNECTION_ERROR);
             }
         });
+    }
+
+    /**
+     * Effettua la disconnessione
+     */
+    public void disconnect() {
+        if (mConnection.getValue() != null) {
+            executor.shutdownNow();
+            socketUdp.close();
+            try {
+                socketTcp.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -215,11 +196,19 @@ public class MouseSocket implements RunnableWithSocket {
         return new SecretKeySpec(decoded, "AES");
     }
 
+    /**
+     * Comandi (tasti)
+     * @param action
+     */
     public void push(byte action){
         push(action, null);
     }
 
-    //todo usare queue????
+    /**
+     * Comandi con coordinate (pad, sensore, wheel)
+     * @param action
+     * @param coord
+     */
     public void push(byte action, float[] coord){
         executor.execute(()->{
             try {
@@ -230,7 +219,7 @@ public class MouseSocket implements RunnableWithSocket {
                     }
                     byte[] s = cmd.command;
                     DatagramPacket dp = new DatagramPacket(s, s.length, ipAddress, portPc);
-                    socket.send(dp);
+                    socketUdp.send(dp);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -238,32 +227,53 @@ public class MouseSocket implements RunnableWithSocket {
         });
     }
 
+    /**
+     * Prova la connessione e poi entra in un ciclo bloccante sulla read
+     * sul canale utilizzato per i comandi di connessione
+     */
     @Override
     public void run() {
         //todo verify ip
-        byte[] r=new byte[1024];
+
+        byte[] rb=new byte[1024];
         try {
-            DatagramPacket dp=new DatagramPacket(r, r.length);
-            while(!Thread.interrupted()) {
-                socket.receive(dp);
-                r = dp.getData();
-                Log.d("Received", new String(r));
-                if (r[0] == CONNECTED) {
+            ipAddress= Inet4Address.getByName(pc.getIp());
+            socketTcp=new Socket(ipAddress, portConnectionPc);
+            InputStream reader =socketTcp.getInputStream();
+            OutputStream writer = socketTcp.getOutputStream();
+
+            if(pc.getPassword()!=null){
+                this.k=generateKeyFromBase64(pc.getPassword());
+            }
+            //genero il comando per la connessione
+            byte[] s = new Command(pc.getPassword(), k).command;
+            writer.write(s);
+            int readBytes;
+            while(!Thread.interrupted() && (readBytes=reader.read(rb)) > -1) {
+                //socketUdp.receive(dp);
+                //r = dp.getData();
+                Log.d("Received", new String(rb));
+                if (rb[0] == CONNECTED) {
                     mConnection.postValue(CONNECTED);
-                } else if (r[0] == REQUIRE_PASSWORD) {
+                } else if (rb[0] == REQUIRE_PASSWORD) {
                     mConnection.postValue(REQUIRE_PASSWORD);
-                } else if (r[0] == WRONG_PASSWORD) {
+                } else if (rb[0] == WRONG_PASSWORD) {
                     mConnection.postValue(WRONG_PASSWORD);
-                } else if (r[0] == CONNECTED_PASSWORD) {
+                } else if (rb[0] == CONNECTED_PASSWORD) {
                     mConnection.postValue(CONNECTED_PASSWORD);
-                }else if (r[0] == CONNECTION_ERROR) {
+                }else if (rb[0] == CONNECTION_ERROR) {
                     mConnection.postValue(CONNECTION_ERROR);
                 }
             }
+            //se mi disconnetto lato server read restituisce -1 e vado qua
+            mConnection.postValue(DISCONNECTED);
         } catch (IOException e) {
-            //mConnection.postValue(DISCONNECTED);
+            //se mi disconnetto lato app vado qua perchè chiudo il socket
             e.printStackTrace();
+            mConnection.postValue(DISCONNECTED);
         }
+
+
     }
 
 
