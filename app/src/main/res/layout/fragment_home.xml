@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".ui.home.HomeFragment">
 
-    <com.google.android.material.button.MaterialButton
+    <com.oinotna.umbra.ui.home.ProgressButton
         style="@style/Widget.MaterialComponents.Button"
         android:id="@+id/btn_search"
         android:layout_width="wrap_content"

@@ -13,6 +13,7 @@ import java.util.concurrent.Executors;
 public abstract class ServerPcDatabase extends RoomDatabase {
 
     public abstract ServerPcDao serverPcDao();
+    //The Java volatile keyword guarantees visibility of changes to variables across threads
     private static volatile ServerPcDatabase INSTANCE;
     private static final int NUMBER_OF_THREADS = 4;
     static final ExecutorService databaseWriteExecutor =

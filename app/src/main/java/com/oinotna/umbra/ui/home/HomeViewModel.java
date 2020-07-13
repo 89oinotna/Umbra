@@ -19,7 +19,7 @@ public class HomeViewModel extends AndroidViewModel {
     private MyInterruptThread thFinder;
 
     private MutableLiveData<Boolean> serversLiveData; //livedata che uso solo per far triggerare gli observer
-    //TODO cuncurrent hashmap??
+
     private ArrayList<ServerPc> serversList;    //lista contenente i server che trovo durante la ricerca
 
     private ServerPcRepository mServerPcRepository;
@@ -54,6 +54,8 @@ public class HomeViewModel extends AndroidViewModel {
 
         if(thFinder==null){
             try {
+                //todo lasciare finder e inviare solo nuovo broadcast
+                //todo finder gestisce tutto in modo trasparente
                 thFinder=new MyInterruptThread(new Finder(broadcast, serversList, serversLiveData));
                 thFinder.start();
             } catch (IOException e) {

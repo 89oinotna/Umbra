@@ -1,7 +1,6 @@
 package com.oinotna.umbra.ui.home;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -9,7 +8,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -20,7 +18,6 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.vectordrawable.graphics.drawable.Animatable2Compat;
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -35,7 +32,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Base64;
 
-public class HomeFragment extends Fragment implements View.OnClickListener, ServersAdapter.onItemClickListner, Observer<Byte>, ServersAdapter.onMenuItemClickListener{
+public class HomeFragment extends Fragment implements View.OnClickListener, ServersAdapter.onItemClickListner, Observer<Byte>, ServersAdapter.onMenuItemClickListener, ProgressButton.OnAnimationEndListener {
 
     private HomeViewModel homeViewModel;
     private ServersAdapter mAdapter;
@@ -43,11 +40,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
     private RecyclerView.LayoutManager lm;
     private ArrayList<ServerPc> serversList;
 
-    private AnimatedVectorDrawableCompat loadingAnimation;
 
     private MouseViewModel mouseViewModel;
-    private DialogPasswordViewModel dialogPasswordViewModel;
+    private PasswordDialogViewModel passwordDialogViewModel;
     private SecretKeyViewModel secretKeyViewModel;
+
+    private ProgressButton btnSearch;
 
 
     //TODO trigger dialog on longpress cardview to change password
@@ -55,8 +53,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
                              ViewGroup container, Bundle savedInstanceState) {
 
         View root = inflater.inflate(R.layout.fragment_home, container, false);
-        Button btnSearch = root.findViewById(R.id.btn_search);
+        btnSearch = root.findViewById(R.id.btn_search);
         btnSearch.setOnClickListener(this);
+        btnSearch.setOnAnimationEndListener(this);
 
         homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
         serversList = homeViewModel.getServersList();
@@ -69,22 +68,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
         mAdapter.setOnMenuItemClickListener(this);
         rv.setAdapter(mAdapter);
         rv.setNestedScrollingEnabled(true);
-        /*loadingAnimation =  AnimatedVectorDrawableCompat.create(requireContext(), R.drawable.avd_anim);
-        rv.setBackground(loadingAnimation);
-        loadingAnimation.registerAnimationCallback(new Animatable2Compat.AnimationCallback() {
-            @Override
-            public void onAnimationEnd(Drawable drawable) {
-                super.onAnimationEnd(drawable);
-                loadingAnimation.start();
-            }
-        });
-        loadingAnimation.start();*/
-        //registerForContextMenu(rv);
+
+
 
         WifiManager wifiManager = (WifiManager) requireActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        if (wifiManager!=null && wifiManager.isWifiEnabled()) {
-        }
-        else{
+        if (wifiManager==null || !wifiManager.isWifiEnabled()) {
             serversList.clear();
             mAdapter.notifyDataSetChanged(); //se rimane qualcosa la tolgo
             Toast.makeText(getContext(), "Connect to WIFI", Toast.LENGTH_SHORT).show();
@@ -105,15 +93,15 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
 
 
     /**
-     * onClick per search
+     * onItemClick per search
      * @param v
      */
     @Override
     public void onClick(View v) {
-
         if(v.getId()==(R.id.btn_search)){
             WifiManager wifiManager = (WifiManager) requireActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             if (wifiManager!=null && wifiManager.isWifiEnabled()) {
+                btnSearch.startAnimation();
                 try {
                     InetAddress broadcast=getBroadcastAddress();
                     if(broadcast!=null)
@@ -132,11 +120,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
     }
 
     /**
-     * onClick per le cardview
+     * onItemClick per le cardview
      * @param position
      */
     @Override
-    public void onClick(int position) {
+    public void onItemClick(int position) {
         ServerPc pc = serversList.get(position);
         Log.d("LOG", "connessione a: " + pc.getFullName());
         homeViewModel.endSearch();
@@ -166,7 +154,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
     }
 
     /**
-     * observer for connection
+     * observer for connection status
      * @param o
      */
     @Override
@@ -181,7 +169,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
         }
         else if(o == MouseSocket.WRONG_PASSWORD){
             Toast.makeText(requireActivity(), R.string.toast_wrong_password, Toast.LENGTH_SHORT).show();
-            //todo show dialogfragment for password
+            requirePassword(mouseViewModel.getPc());
         }
         else if(o == MouseSocket.CONNECTION_ERROR) { //CONNECTION_ERROR
             Toast.makeText(requireActivity(), R.string.toast_cant_connect, Toast.LENGTH_SHORT).show();
@@ -217,22 +205,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
                 }
                 //se non è presente devo chiedere la password
                 else {
-
-                    dialogPasswordViewModel=new ViewModelProvider(requireActivity()).get(DialogPasswordViewModel.class);
-                    dialogPasswordViewModel.getPassword().observe(getViewLifecycleOwner(), new Observer<String>() {
-                        @Override
-                        public void onChanged(String s) {
-                            ServerPc pc=mouseViewModel.getPc();
-                            ServerPc store=new ServerPc(pc.getName(), pc.getIp());
-                            store.setPassword(secretKeyViewModel.encrypt(s.getBytes()));
-                            homeViewModel.storePc(store); //salvo nel db
-                            mouseViewModel.usePassword(s); //riprovo la connessione con la password
-                            dialogPasswordViewModel.getPassword().removeObserver(this);
-                        }
-                    });
-                    DialogFragment df = new PasswordDialog();
-                    df.show(requireActivity().getSupportFragmentManager(), "password");
-
+                    ServerPc pc=mouseViewModel.getPc();
+                    requirePassword(pc);
                 }
                 //rimuovo l'observer
                 pc.removeObserver(this);
@@ -243,23 +217,54 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
     @Override
     public boolean onMenuItemClick(int itemId, int position) {
         if(itemId==1){
-            dialogPasswordViewModel=new ViewModelProvider(requireActivity()).get(DialogPasswordViewModel.class);
-            dialogPasswordViewModel.getPassword().observe(getViewLifecycleOwner(), new Observer<String>() {
+            requirePassword(serversList.get(position));
+            /*passwordDialogViewModel =new ViewModelProvider(requireActivity()).get(PasswordDialogViewModel.class);
+            passwordDialogViewModel.getPassword().observe(getViewLifecycleOwner(), new Observer<String>() {
                 @Override
                 public void onChanged(String s) {
-                    ServerPc pc = serversList.get(position);
-                    pc.setPassword(s);
-                    homeViewModel.storePc(pc);
-                    dialogPasswordViewModel.getPassword().removeObserver(this);
-                    onClick(position); //todo non è tanto bello
+                    ServerPc pc= serversList.get(position);;
+                    ServerPc store=new ServerPc(pc.getName(), pc.getIp());
+                    store.setPassword(secretKeyViewModel.encrypt(s.getBytes()));
+                    homeViewModel.storePc(store); //salvo nel db
+                    //mouseViewModel.usePassword(s); //riprovo la connessione con la password
+                    //Log.d("LOG", "connessione a: " + pc.getFullName());
+                    //homeViewModel.endSearch();
+                    passwordDialogViewModel.getPassword().removeObserver(this);
+                    onItemClick(position);
+
                 }
             });
             DialogFragment df = new PasswordDialog();
-            df.show(requireActivity().getSupportFragmentManager(), "password");
+            df.show(requireActivity().getSupportFragmentManager(), "password");*/
 
         }
         return false;
     }
 
+    private void requirePassword(ServerPc pc){
+        passwordDialogViewModel =new ViewModelProvider(requireActivity()).get(PasswordDialogViewModel.class);
+        passwordDialogViewModel.getPassword().observe(getViewLifecycleOwner(), new Observer<String>() {
+            @Override
+            public void onChanged(String s) {
+                ServerPc store=new ServerPc(pc.getName(), pc.getIp());
+                store.setPassword(secretKeyViewModel.encrypt(s.getBytes()));
+                homeViewModel.storePc(store); //salvo nel db
+                mouseViewModel.usePassword(s); //riprovo la connessione con la password
+                passwordDialogViewModel.getPassword().removeObserver(this);
+            }
+        });
+        DialogFragment df = new PasswordDialog();
+        df.show(requireActivity().getSupportFragmentManager(), "password");
+    }
 
+    /**
+     * Quando l'animazione sul bottone termina
+     */
+    @Override
+    public void onAnimationEndListener() {
+        btnSearch.startEndAnimation(); //per farla a contrario
+        if(serversList.isEmpty()){
+            Toast.makeText(requireActivity(), "Nothing found", Toast.LENGTH_SHORT).show();
+        }
+    }
 }

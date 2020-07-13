@@ -29,7 +29,6 @@ import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 import com.oinotna.umbra.R;
-import com.oinotna.umbra.SecretKeyViewModel;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -38,7 +37,7 @@ public class PasswordDialog extends DialogFragment implements SurfaceHolder.Call
 
     //private MouseViewModel mouseViewModel;
     //private HomeViewModel homeViewModel;
-    private DialogPasswordViewModel dialogPasswordViewModel;
+    private PasswordDialogViewModel passwordDialogViewModel;
 
     private SurfaceView surfaceView;
     private BarcodeDetector barcodeDetector;
@@ -55,10 +54,9 @@ public class PasswordDialog extends DialogFragment implements SurfaceHolder.Call
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
 
+        passwordDialogViewModel =new ViewModelProvider(requireActivity()).get(PasswordDialogViewModel.class);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
-
-       //mouseViewModel.getConnection().observe(getViewLifecycleOwner(), this);
 
         // Get the layout inflater
         LayoutInflater inflater = requireActivity().getLayoutInflater();
@@ -70,11 +68,6 @@ public class PasswordDialog extends DialogFragment implements SurfaceHolder.Call
         txtBarcode=root.findViewById(R.id.txt_barcode);
         surfaceView = root.findViewById(R.id.surface_view);
 
-        //homeViewModel = new ViewModelProvider(requireActivity()).get(HomeViewModel.class);
-
-        //mouseViewModel = new ViewModelProvider(requireActivity()).get(MouseViewModel.class);
-
-        dialogPasswordViewModel=new ViewModelProvider(requireActivity()).get(DialogPasswordViewModel.class);
 
         barcodeDetector = new BarcodeDetector.Builder(getContext())
                 .setBarcodeFormats(Barcode.QR_CODE)
@@ -89,12 +82,13 @@ public class PasswordDialog extends DialogFragment implements SurfaceHolder.Call
 
         barcodeDetector.setProcessor(this);
 
+        //per i permessi
         requestPermissionLauncher=
                 registerForActivityResult(new ActivityResultContracts.RequestPermission(), this);
 
         //todo tolgo positive e metto che connette direttamente
         builder.setView(root)
-                .setPositiveButton("connect", this)
+                .setPositiveButton("ok", this)
                 .setNegativeButton("cancel", this);
         return builder.create();
     }
@@ -103,13 +97,7 @@ public class PasswordDialog extends DialogFragment implements SurfaceHolder.Call
     @Override
     public void onClick(DialogInterface dialog, int button) {
         if(button==AlertDialog.BUTTON_POSITIVE){
-
-            /*ServerPc pc=mouseViewModel.getPc();
-            pc.setPassword(secretKeyViewModel.encrypt(txtBarcode.getText().toString().getBytes()));
-            homeViewModel.storePc(pc); //salvo nel db
-            mouseViewModel.usePassword(txtBarcode.getText().toString()); //riprovo la connessione con la password
-       */
-            dialogPasswordViewModel.setPassword(txtBarcode.getText().toString());
+            passwordDialogViewModel.setPassword(txtBarcode.getText().toString());
         }
         else if(button==AlertDialog.BUTTON_NEGATIVE){
             Objects.requireNonNull(PasswordDialog.this.getDialog()).cancel();
@@ -160,20 +148,10 @@ public class PasswordDialog extends DialogFragment implements SurfaceHolder.Call
         final SparseArray<Barcode> barcodes = detections.getDetectedItems();
 
         if (barcodes.size() != 0) {
-            txtBarcode.post(new Runnable() {    // Use the post method of the TextView
-                public void run() {
-                    txtBarcode.setText(    // Update the TextView
-                            barcodes.valueAt(0).displayValue
-                    );
-                }
-            });
-            /*getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getContext(), barcodes.valueAt(0).displayValue, Toast.LENGTH_SHORT).show();
-
-                }
-            });*/
+            // Use the post method of the TextView
+            txtBarcode.post(() -> txtBarcode.setText(    // Update the TextView
+                    barcodes.valueAt(0).displayValue
+            ));
         }
     }
 

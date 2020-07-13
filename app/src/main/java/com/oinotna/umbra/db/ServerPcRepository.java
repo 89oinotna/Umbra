@@ -11,7 +11,6 @@ public class ServerPcRepository {
     public ServerPcRepository(Application application){
         ServerPcDatabase db = ServerPcDatabase.getDatabase(application);
         mServerPcDao = db.serverPcDao();
-
     }
 
     public LiveData<ServerPc> getPc(String name){

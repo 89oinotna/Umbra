@@ -173,10 +173,9 @@ public class Mouse implements MouseControl {
         final float deltaY=(y-lastSensor[1]);
         lastSensor[0]=x;
         lastSensor[1]=y;
-        if(Math.abs(deltaX)-event.sensor.getResolution()>event.sensor.getResolution()&&Math.abs(deltaY)-event.sensor.getResolution()>event.sensor.getResolution())
+        if(Math.abs(Math.abs(deltaX)-event.sensor.getResolution())>event.sensor.getResolution() &&
+                Math.abs(Math.abs(deltaY)-event.sensor.getResolution())>event.sensor.getResolution())
             socket.push(SENSOR_MOVE, new float[]{deltaX*sensorSensitivity*-1,deltaY*sensorSensitivity*-1});
-        //if((int) Math.abs(x*gyroscopeSensitivity)>0&&(int)Math.abs(y*gyroscopeSensitivity)>0)
-         //   socket.push(SENSOR_MOVE, new float[]{x*gyroscopeSensitivity*-1,y*gyroscopeSensitivity*-1});
         //TODO RESET
     }
 

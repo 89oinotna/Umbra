@@ -4,10 +4,10 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class DialogPasswordViewModel extends ViewModel {
+public class PasswordDialogViewModel extends ViewModel {
     private MutableLiveData<String> password;
 
-    public DialogPasswordViewModel() {
+    public PasswordDialogViewModel() {
         password=new MutableLiveData<>();
     }
 

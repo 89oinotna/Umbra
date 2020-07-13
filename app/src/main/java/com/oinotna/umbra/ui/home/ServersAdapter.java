@@ -24,7 +24,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ServerVi
     private onMenuItemClickListener mListenerMenu;
 
     public interface onItemClickListner {
-        void onClick(int position);
+        void onItemClick(int position);
     }
 
     public interface onMenuItemClickListener{
@@ -54,7 +54,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ServerVi
 
         @Override
         public void onClick(View v) {
-            mListener.onClick(getAdapterPosition());
+            mListener.onItemClick(getAdapterPosition());
         }
 
         @Override
