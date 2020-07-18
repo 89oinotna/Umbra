@@ -15,7 +15,6 @@ public class PasswordDialogViewModel extends ViewModel {
         return password;
     }
 
-
     public void setPassword(String password) {
         this.password.postValue(password);
     }

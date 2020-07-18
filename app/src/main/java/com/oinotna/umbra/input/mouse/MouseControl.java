@@ -1,4 +1,4 @@
-package com.oinotna.umbra.mouse;
+package com.oinotna.umbra.input.mouse;
 
 import android.hardware.SensorEvent;
 import android.view.MotionEvent;

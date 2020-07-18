@@ -75,7 +75,7 @@ public class CircularAnimatedDrawable extends Drawable implements Animatable {
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
                 if(mListener!=null)
-                    mListener.onAnimationEndListener();
+                    mListener.onAnimationEnd();
                 stop();
             }
         });

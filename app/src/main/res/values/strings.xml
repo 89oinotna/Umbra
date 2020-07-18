@@ -7,6 +7,10 @@
     <!-- Home Fragment -->
     <string name="search_button">Search</string>
 
+    <!-- Password Dialog -->
+    <string name="button_ok">OK</string>
+    <string name="button_cancel">Cancel</string>
+
     <!-- Preference Titles -->
     <string name="mouse_header">Mouse Settings</string>
 
@@ -15,7 +19,14 @@
     <!-- Toast -->
     <string name="toast_wrong_password">Wrong Password</string>
     <string name="toast_cant_connect">Can\'t Connect</string>
+    <string name="toast_nothing_found">Nothing Found</string>
     <string name="no_barcode_detected">No Barcode Detected</string>
+    <string name="network_error">Network Error</string>
+    <string name="connect_wifi">Connect to WIFI</string>
 
+    <!-- Notification -->
+    <string name="notification_connected">Umbra is connected</string>
+    <string name="notification_connected_to">Connected to: </string>
+    <string name="notification_button_disconnect">Disconnect</string>
 
 </resources>

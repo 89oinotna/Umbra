@@ -49,7 +49,6 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ServerVi
             cv = itemView.findViewById(R.id.cv_server);
             cv.setOnClickListener(this);
             cv.setOnCreateContextMenuListener(this);
-            //itemView.setOnLongClickListener(this);
         }
 
         @Override

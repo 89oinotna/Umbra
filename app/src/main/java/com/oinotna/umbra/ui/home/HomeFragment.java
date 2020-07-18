@@ -18,17 +18,17 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.oinotna.umbra.R;
 import com.oinotna.umbra.SecretKeyViewModel;
 import com.oinotna.umbra.db.ServerPc;
-import com.oinotna.umbra.mouse.MouseSocket;
+import com.oinotna.umbra.input.MySocket;
 import com.oinotna.umbra.ui.mouse.MouseViewModel;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Base64;
 
@@ -53,11 +53,13 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
                              ViewGroup container, Bundle savedInstanceState) {
 
         View root = inflater.inflate(R.layout.fragment_home, container, false);
+
         btnSearch = root.findViewById(R.id.btn_search);
         btnSearch.setOnClickListener(this);
         btnSearch.setOnAnimationEndListener(this);
 
         homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
+
         serversList = homeViewModel.getServersList();
 
         lm=new GridLayoutManager(getContext(), 3);
@@ -69,13 +71,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
         rv.setAdapter(mAdapter);
         rv.setNestedScrollingEnabled(true);
 
-
-
         WifiManager wifiManager = (WifiManager) requireActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         if (wifiManager==null || !wifiManager.isWifiEnabled()) {
+            //se rimane qualcosa la tolgo
             serversList.clear();
-            mAdapter.notifyDataSetChanged(); //se rimane qualcosa la tolgo
-            Toast.makeText(getContext(), "Connect to WIFI", Toast.LENGTH_SHORT).show();
+            mAdapter.notifyDataSetChanged();
+            Toast.makeText(getContext(), R.string.connect_wifi, Toast.LENGTH_SHORT).show();
         }
 
         //mi permette di aggiornare la recycler view
@@ -93,8 +94,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
 
 
     /**
-     * onItemClick per search
-     * @param v
+     * onClick for the search button
+     * Check for wifi enabled, start button animation, start server search
      */
     @Override
     public void onClick(View v) {
@@ -106,22 +107,24 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
                     InetAddress broadcast=getBroadcastAddress();
                     if(broadcast!=null)
                         homeViewModel.searchForServers(broadcast);
-                } catch (IOException e) {
+                } catch (UnknownHostException e) {
                     e.printStackTrace();
+                    Toast.makeText(getContext(), R.string.network_error, Toast.LENGTH_SHORT).show();
                 }
             }
             else{
                 serversList.clear();
                 mAdapter.notifyDataSetChanged(); //se rimane qualcosa la tolgo
-                Toast.makeText(getContext(), "Connect to WIFI", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), R.string.connect_wifi, Toast.LENGTH_SHORT).show();
             }
 
         }
     }
 
     /**
-     * onItemClick per le cardview
-     * @param position
+     * onItemClick for CardView inside the RecyclerView
+     * End server search and connect to selected server
+     * @param position position of the selected server
      */
     @Override
     public void onItemClick(int position) {
@@ -137,11 +140,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
     }
 
     /**
-     * Restituisce l'indirizzo broadcast della rete
-     * @return
-     * @throws IOException
+     * Retrive the broadcast address of the connected network
+     * @return Broadcast address
+     * @throws UnknownHostException
      */
-    private InetAddress getBroadcastAddress() throws IOException {
+    private InetAddress getBroadcastAddress() throws UnknownHostException {
         WifiManager wifi = (WifiManager) requireActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         if(wifi==null)
             return null;
@@ -154,44 +157,42 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
     }
 
     /**
-     * observer for connection status
+     * Observer for connection status
      * @param o
      */
     @Override
     public void onChanged(Byte o) {
-        if(o == MouseSocket.CONNECTED || o == MouseSocket.CONNECTED_PASSWORD) {
+        if(o == MySocket.CONNECTED || o == MySocket.CONNECTED_PASSWORD) {
             ((BottomNavigationView) requireActivity().findViewById(R.id.nav_view)).setSelectedItemId(R.id.mouse);
-            //mouseViewModel.getConnection().removeObserver(this);
         }
-        else if(o == MouseSocket.REQUIRE_PASSWORD){
+        else if(o == MySocket.REQUIRE_PASSWORD){
             LiveData<ServerPc> pc=homeViewModel.getPC(mouseViewModel.getPc().getName());
             subscribeToServerPc(pc); //controllo se è presente nel db
         }
-        else if(o == MouseSocket.WRONG_PASSWORD){
+        else if(o == MySocket.WRONG_PASSWORD){
             Toast.makeText(requireActivity(), R.string.toast_wrong_password, Toast.LENGTH_SHORT).show();
             requirePassword(mouseViewModel.getPc());
         }
-        else if(o == MouseSocket.CONNECTION_ERROR) { //CONNECTION_ERROR
+        else if(o == MySocket.CONNECTION_ERROR) { //CONNECTION_ERROR
             Toast.makeText(requireActivity(), R.string.toast_cant_connect, Toast.LENGTH_SHORT).show();
         }
     }
 
     /**
-     * Subscribe observer to a LiveData<ServerPc>
+     * Subscribe observer for LiveData<ServerPc>
      * Used when waiting for a query
-     * Se ho bisogno della password visualizza PasswordDialog
+     * Requires password for the server if the query return null
      * One shot observer (autoremove)
-     * @param pc
      */
     private void subscribeToServerPc(LiveData<ServerPc> pc){
         //no lambda altrimenti non posso usare this!!
         pc.observe(getViewLifecycleOwner(), new Observer<ServerPc>() {
             @Override
             public void onChanged(ServerPc serverPc) {
-
+                //rimuovo l'observer
+                pc.removeObserver(this);
                 //serverpc has the base64 of the aes encrypted password
                 if(serverPc!=null){
-                    //todo encrypt?
                     String encryptedBase64=serverPc.getPassword();
                     byte[] decoded;
                     // get base64 encoded version of the key
@@ -208,39 +209,30 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
                     ServerPc pc=mouseViewModel.getPc();
                     requirePassword(pc);
                 }
-                //rimuovo l'observer
-                pc.removeObserver(this);
             }
         });
     }
 
+    /**
+     * Click on the ContextMenu of a CardView
+     * @param itemId id of the selected menu item
+     * @param position position of the server in the list
+     */
     @Override
     public boolean onMenuItemClick(int itemId, int position) {
         if(itemId==1){
             requirePassword(serversList.get(position));
-            /*passwordDialogViewModel =new ViewModelProvider(requireActivity()).get(PasswordDialogViewModel.class);
-            passwordDialogViewModel.getPassword().observe(getViewLifecycleOwner(), new Observer<String>() {
-                @Override
-                public void onChanged(String s) {
-                    ServerPc pc= serversList.get(position);;
-                    ServerPc store=new ServerPc(pc.getName(), pc.getIp());
-                    store.setPassword(secretKeyViewModel.encrypt(s.getBytes()));
-                    homeViewModel.storePc(store); //salvo nel db
-                    //mouseViewModel.usePassword(s); //riprovo la connessione con la password
-                    //Log.d("LOG", "connessione a: " + pc.getFullName());
-                    //homeViewModel.endSearch();
-                    passwordDialogViewModel.getPassword().removeObserver(this);
-                    onItemClick(position);
-
-                }
-            });
-            DialogFragment df = new PasswordDialog();
-            df.show(requireActivity().getSupportFragmentManager(), "password");*/
-
+            return true; //todo ok???
         }
         return false;
     }
 
+    /**
+     * Requires password for a server
+     * Shows a PasswordDialog and retrieve password from it
+     * Stores the password
+     * @param pc
+     */
     private void requirePassword(ServerPc pc){
         passwordDialogViewModel =new ViewModelProvider(requireActivity()).get(PasswordDialogViewModel.class);
         passwordDialogViewModel.getPassword().observe(getViewLifecycleOwner(), new Observer<String>() {
@@ -258,13 +250,14 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
     }
 
     /**
-     * Quando l'animazione sul bottone termina
+     * When button animation end restore previous state
+     * Make toast if nothing found
      */
     @Override
-    public void onAnimationEndListener() {
+    public void onAnimationEnd() {
         btnSearch.startEndAnimation(); //per farla a contrario
         if(serversList.isEmpty()){
-            Toast.makeText(requireActivity(), "Nothing found", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireActivity(), R.string.toast_nothing_found, Toast.LENGTH_SHORT).show();
         }
     }
 }

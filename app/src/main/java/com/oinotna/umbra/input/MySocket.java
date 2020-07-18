@@ -1,10 +1,11 @@
-package com.oinotna.umbra.mouse;
+package com.oinotna.umbra.input;
 
 import android.util.Log;
 
 import androidx.lifecycle.MutableLiveData;
 
 import com.oinotna.umbra.db.ServerPc;
+import com.oinotna.umbra.input.mouse.Mouse;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +21,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -30,7 +30,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-public class MouseSocket implements Runnable {
+public class MySocket implements Runnable {
     //todo header object
 
     private ServerPc pc;
@@ -41,9 +41,8 @@ public class MouseSocket implements Runnable {
     private ExecutorService executor;
     private InetAddress ipAddress;
 
-    private int portPc=4513;
-    private int portConnectionPc=4512;
-    //private int portApp=4512;
+    private int portPc=4513; //UDP mouse
+    private int portConnectionPc=4512; //TCP connection
 
     //connection request
     public static byte CONNECTION=0x04;
@@ -59,20 +58,46 @@ public class MouseSocket implements Runnable {
     public static byte REQUIRE_PASSWORD=0x05;
     public static byte WRONG_PASSWORD=0x06;
 
-
     private DatagramSocket socketUdp;
     private Socket socketTcp;
+
+    private Thread mThread;
+
+    public boolean connect(ServerPc pc, MutableLiveData<Byte> mConnection) {
+        //Se mi voglio connettere allo stesso
+        if(mConnection.getValue()!=null && this.pc!=null &&
+                (mConnection.getValue() == MySocket.CONNECTED_PASSWORD || mConnection.getValue() == MySocket.CONNECTED)
+                && this.pc.getName().equals(pc.getName())){
+            mConnection.postValue(mConnection.getValue());
+            return false;
+        }
+
+        this.pc=pc;
+        this.k=null;
+        this.mConnection=mConnection;
+
+        if(mThread!=null) {
+            disconnect();
+        }
+
+        mThread = new Thread(this);
+        mThread.start();
+
+        return true;
+    }
 
 
     public ServerPc getPc() {
         return  pc;
     }
 
+
+
     private class Command{
         private byte[] command;
 
         /**
-         * Principale per invio comandi
+         * Principale per invio comandi (Mouse)
          * @param connectionType
          * @param action
          * @param coord
@@ -102,7 +127,7 @@ public class MouseSocket implements Runnable {
                 byte[] cb=c.getBytes();
                 command=new byte[2 + cb.length];
                 command[0]=CONNECTION_PASSWORD;
-                command[1]=Mouse.NULL;
+                command[1]= Mouse.NULL;
                 System.arraycopy(cb, 0, command, 2, cb.length);
                 encrypt(k);
             }
@@ -135,24 +160,24 @@ public class MouseSocket implements Runnable {
         }
     }
 
-    public MouseSocket(ServerPc pc, MutableLiveData<Byte> mConnection) throws IOException {
-        this.mConnection=mConnection;
-        this.pc=pc;
+    public MySocket(/*ServerPc pc, MutableLiveData<Byte> mConnection*/) throws IOException {
+        //this.mConnection=mConnection;
+        //this.pc=pc;
         this.socketUdp=new DatagramSocket();
         this.executor= Executors.newSingleThreadExecutor();
     }
 
     /**
-     * Invia una richiesta di connessione
-     * Istanzia la secret key se mi connetto con password
+     * Sends a connection request
+     * Initialize secret key if connected with password
      */
-    public void tryConnection() {
+    public void usePassword(ServerPc pc) {
         executor.execute(() -> {
             OutputStream writer = null;
             try{
                 writer=socketTcp.getOutputStream();
                 if(pc.getPassword()!=null){
-                    this.k=generateKeyFromBase64(pc.getPassword());
+                    this.k= decodeKeyFromBase64(pc.getPassword());
                 }
                 //genero il comando per la connessione
                 byte[] s = new Command(pc.getPassword(), k).command;
@@ -168,6 +193,8 @@ public class MouseSocket implements Runnable {
      */
     public void disconnect() {
         if (mConnection.getValue() != null) {
+            mThread.interrupt();
+            mThread=null;
             executor.shutdownNow();
             socketUdp.close();
             try {
@@ -183,12 +210,11 @@ public class MouseSocket implements Runnable {
      * @param password
      * @return
      */
-    private SecretKey generateKeyFromBase64(String password){
+    private SecretKey decodeKeyFromBase64(String password){
         byte[] decoded;
         // get base64 encoded version of the key
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             decoded = Base64.getDecoder().decode(password);
-            //todo use sha
         }
         else{
             decoded = android.util.Base64.decode(password, android.util.Base64.DEFAULT);
@@ -243,7 +269,7 @@ public class MouseSocket implements Runnable {
             OutputStream writer = socketTcp.getOutputStream();
 
             if(pc.getPassword()!=null){
-                this.k=generateKeyFromBase64(pc.getPassword());
+                this.k= decodeKeyFromBase64(pc.getPassword());
             }
             //genero il comando per la connessione
             byte[] s = new Command(pc.getPassword(), k).command;

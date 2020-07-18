@@ -1,16 +1,17 @@
-package com.oinotna.umbra.mouse;
+package com.oinotna.umbra.input.mouse;
 
 import android.hardware.SensorEvent;
 import android.view.MotionEvent;
 
-import androidx.lifecycle.MutableLiveData;
-
-import com.oinotna.umbra.db.ServerPc;
-
-import java.io.IOException;
+import com.oinotna.umbra.input.InputManager;
 
 public class Mouse implements MouseControl {
 
+    public enum Type {
+        LEFT, RIGHT, PAD, SENSOR, WHEEL
+    }
+
+    //action type
     public static byte NULL=0x00;
     public static byte LEFT_DOWN=0x01;
     public static byte LEFT_UP=0x02;
@@ -20,8 +21,8 @@ public class Mouse implements MouseControl {
     public static byte PAD_MOVE=0x06;
     public static byte SENSOR_MOVE=0x07;
 
-    private MouseSocket socket;
-    private Thread thSocket;
+    //private MySocket socket;
+    //private Thread thSocket;
 
     private float[] lastWheel;
     private float[] lastPad;
@@ -30,37 +31,37 @@ public class Mouse implements MouseControl {
     private float wheelSensitivity;
     private float padSensitivity;
     private float sensorSensitivity;
+    private static int sensorSensitivityMultiplier=900;
 
 
-    public Mouse(ServerPc pc, MutableLiveData<Byte> mConnection) throws IOException {
-        //todo single thread executor per run di mousesocket???
+    public Mouse(/*ServerPc pc, MutableLiveData<Byte> mConnection*/) {
         this.lastWheel=new float[]{-1,-1};
         this.lastPad=new float[]{-1,-1};
         this.lastSensor=new float[]{-1,-1};
 
-        //creo il socket i mi metto in ascolto
-        this.socket=new MouseSocket(pc, mConnection);
+        //creo il socket e mi metto in ascolto
+        /*this.socket=new MySocket(pc, mConnection);
         this.thSocket=new Thread(socket);
-        this.thSocket.start();
+        this.thSocket.start();*/
     }
 
-    public void tryConnection(){
+    /*public void tryConnection(){
        this.socket.tryConnection();
     }
 
     public void close() {
         socket.disconnect();
         thSocket.interrupt();
-    }
+    }*/
 
     @Override
     public boolean left(MotionEvent event) {
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
-                socket.push(LEFT_DOWN);
+                InputManager.push(LEFT_DOWN);
                 break;
             case MotionEvent.ACTION_UP:
-                socket.push(LEFT_UP);
+                InputManager.push(LEFT_UP);
                 break;
             default:
                 return false;
@@ -72,10 +73,10 @@ public class Mouse implements MouseControl {
     public boolean right(MotionEvent event) {
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
-                socket.push(RIGHT_DOWN);
+                InputManager.push(RIGHT_DOWN);
                 break;
             case MotionEvent.ACTION_UP:
-                socket.push(RIGHT_UP);
+                InputManager.push(RIGHT_UP);
                 break;
             default:
                 return false;
@@ -97,7 +98,7 @@ public class Mouse implements MouseControl {
 
                 final float deltaY = (y-lastWheel[1])*wheelSensitivity;
                 //TODO maybe sampling for better performance
-                socket.push(WHEEL_MOVE, new float[]{0, deltaY});
+                InputManager.push(WHEEL_MOVE, new float[]{0, deltaY});
                 break;
             case MotionEvent.ACTION_UP:
                 //reset (do i need this?)
@@ -110,7 +111,7 @@ public class Mouse implements MouseControl {
         return true;
     }
 
-    private long timestap;
+    private long timestampPad;
 
     @Override
     public boolean move(MotionEvent event) {
@@ -119,7 +120,7 @@ public class Mouse implements MouseControl {
                 //initialize the point
                 lastPad[0]=event.getX();
                 lastPad[1]=event.getY();
-                timestap=System.currentTimeMillis();
+                timestampPad=System.currentTimeMillis();
             case MotionEvent.ACTION_MOVE:
                 // new position
                 final float x = event.getX();
@@ -127,16 +128,15 @@ public class Mouse implements MouseControl {
 
                 final float deltaX = (x-lastPad[0])*padSensitivity;
                 final float deltaY = (y-lastPad[1])*padSensitivity;
-                //TODO maybe sampling for better performance
                 lastPad[0]=x;
                 lastPad[1]=y;
-                socket.push(PAD_MOVE, new float[]{deltaX, deltaY});
+                InputManager.push(PAD_MOVE, new float[]{deltaX, deltaY});
                 break;
             case MotionEvent.ACTION_UP:
                 //reset (do i need this?)
-                if(System.currentTimeMillis()-timestap<100){
-                    socket.push(LEFT_DOWN);
-                    socket.push(LEFT_UP);
+                if(System.currentTimeMillis()-timestampPad<100){
+                    InputManager.push(LEFT_DOWN);
+                    InputManager.push(LEFT_UP);
                 }
                 lastPad[0]=-1;
                 lastPad[1]=-1;
@@ -174,13 +174,13 @@ public class Mouse implements MouseControl {
         lastSensor[0]=x;
         lastSensor[1]=y;
         if(Math.abs(Math.abs(deltaX)-event.sensor.getResolution())>event.sensor.getResolution() &&
-                Math.abs(Math.abs(deltaY)-event.sensor.getResolution())>event.sensor.getResolution())
-            socket.push(SENSOR_MOVE, new float[]{deltaX*sensorSensitivity*-1,deltaY*sensorSensitivity*-1});
-        //TODO RESET
+                Math.abs(Math.abs(deltaY)-event.sensor.getResolution())>event.sensor.getResolution() &&
+                ((int)(deltaX*sensorSensitivity)!=0 || (int)(deltaY*sensorSensitivity)!=0))
+            InputManager.push(SENSOR_MOVE, new float[]{deltaX*sensorSensitivity*-1,deltaY*sensorSensitivity*-1});
     }
 
     public void setSensorSensitivity(int sensorSensitivity) {
-        this.sensorSensitivity=sensorSensitivity*1000;
+        this.sensorSensitivity=sensorSensitivity*sensorSensitivityMultiplier;
     }
 
     public void resetSensor(){
@@ -188,7 +188,7 @@ public class Mouse implements MouseControl {
         lastSensor[1]=-1;
     }
 
-    public ServerPc getPc() {
+    /*public ServerPc getPc() {
         return socket.getPc();
-    }
+    }*/
 }

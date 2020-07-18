@@ -26,7 +26,7 @@ public class ProgressButton extends MaterialButton {
     private OnAnimationEndListener mListener;
 
     public interface OnAnimationEndListener{
-        void onAnimationEndListener();
+        void onAnimationEnd();
     }
 
     public void setOnAnimationEndListener(OnAnimationEndListener listener){
@@ -118,7 +118,8 @@ public class ProgressButton extends MaterialButton {
     }
 
     /**
-     * Method called to start the animation. Morphs in to a ball and then starts a loading spinner.
+     * Method called to start the animation.
+     * Morphs in to a ball and then starts a loading spinner.
      */
     public void startAnimation(){
         if(mState != State.IDLE){
@@ -130,10 +131,12 @@ public class ProgressButton extends MaterialButton {
         //creo i valori per le animazioni
 
         int arcWidth = 15;
-        if(mAnimatedDrawable==null)
+        if(mAnimatedDrawable==null) {
             mAnimatedDrawable = new CircularAnimatedDrawable(this,
-                arcWidth,
-                Color.WHITE);
+                    arcWidth,
+                    Color.WHITE);
+            mAnimatedDrawable.setOnAnimationEndListener(mListener);
+        }
 
         mStartingWidth = getWidth();
         mStartingHeight=getHeight();
@@ -183,19 +186,15 @@ public class ProgressButton extends MaterialButton {
         super.onDraw(canvas);
 
         if (mState == State.CIRCLE && !mIsMorphingInProgress) {
-            drawIndeterminateProgress(canvas);
+            drawIndeterminateProgress(canvas); //loading spinner
         }
     }
 
     private void drawIndeterminateProgress(Canvas canvas) {
         if (!mAnimatedDrawable.isRunning()) {
 
-            mAnimatedDrawable.setOnAnimationEndListener(mListener);
-
-            //int offset = (getWidth() - getHeight()) / 2;
-
-            int left = 0;//offset;
-            int right = getWidth();// - offset;
+            int left = 0;
+            int right = getWidth();
             int bottom = getHeight();
             int top = 0;
 

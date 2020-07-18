@@ -20,6 +20,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -35,12 +36,9 @@ import java.util.Objects;
 
 public class PasswordDialog extends DialogFragment implements SurfaceHolder.Callback, ActivityResultCallback<Boolean>, Detector.Processor<Barcode>, DialogInterface.OnClickListener {
 
-    //private MouseViewModel mouseViewModel;
-    //private HomeViewModel homeViewModel;
     private PasswordDialogViewModel passwordDialogViewModel;
 
     private SurfaceView surfaceView;
-    private BarcodeDetector barcodeDetector;
     private CameraSource cameraSource;
 
     private TextView txtBarcode;
@@ -54,24 +52,22 @@ public class PasswordDialog extends DialogFragment implements SurfaceHolder.Call
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
 
-        passwordDialogViewModel =new ViewModelProvider(requireActivity()).get(PasswordDialogViewModel.class);
+        passwordDialogViewModel = new ViewModelProvider(requireActivity()).get(PasswordDialogViewModel.class);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
 
-        // Get the layout inflater
         LayoutInflater inflater = requireActivity().getLayoutInflater();
 
-        // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout
         View root = inflater.inflate(R.layout.dialog_password, null);
 
-        txtBarcode=root.findViewById(R.id.txt_barcode);
+        txtBarcode = root.findViewById(R.id.txt_barcode);
         surfaceView = root.findViewById(R.id.surface_view);
 
-
-        barcodeDetector = new BarcodeDetector.Builder(getContext())
+        BarcodeDetector barcodeDetector = new BarcodeDetector.Builder(getContext())
                 .setBarcodeFormats(Barcode.QR_CODE)
                 .build();
+        barcodeDetector.setProcessor(this);
 
         cameraSource = new CameraSource
                 .Builder(requireContext(), barcodeDetector)
@@ -80,27 +76,25 @@ public class PasswordDialog extends DialogFragment implements SurfaceHolder.Call
 
         surfaceView.getHolder().addCallback(this);
 
-        barcodeDetector.setProcessor(this);
-
-        //per i permessi
-        requestPermissionLauncher=
+        //For camera permission
+        requestPermissionLauncher =
                 registerForActivityResult(new ActivityResultContracts.RequestPermission(), this);
 
-        //todo tolgo positive e metto che connette direttamente
+        //todo tolgo positive nutton e metto che si connette direttamente
         builder.setView(root)
-                .setPositiveButton("ok", this)
-                .setNegativeButton("cancel", this);
+                .setPositiveButton(R.string.button_ok, this)
+                .setNegativeButton(R.string.button_cancel, this);
+
         return builder.create();
     }
 
     /* ------ DIALOG BUTTON -------- */
     @Override
     public void onClick(DialogInterface dialog, int button) {
-        if(button==AlertDialog.BUTTON_POSITIVE){
+        if (button == AlertDialog.BUTTON_POSITIVE) {
             passwordDialogViewModel.setPassword(txtBarcode.getText().toString());
-        }
-        else if(button==AlertDialog.BUTTON_NEGATIVE){
-            Objects.requireNonNull(PasswordDialog.this.getDialog()).cancel();
+        } else if (button == AlertDialog.BUTTON_NEGATIVE) {
+            Objects.requireNonNull(this.getDialog()).dismiss();
         }
     }
 
@@ -111,14 +105,13 @@ public class PasswordDialog extends DialogFragment implements SurfaceHolder.Call
                 requireContext(), Manifest.permission.CAMERA) ==
                 PackageManager.PERMISSION_GRANTED) {
             // You can use the API that requires the permission.
-            try{
+            try {
                 cameraSource.start(surfaceView.getHolder());
             } catch (IOException ie) {
                 ie.printStackTrace();
                 Log.d("CAMERA SOURCE", Objects.requireNonNull(ie.getMessage()));
             }
-        }
-        else {
+        } else {
             // You can directly ask for the permission.
             // The registered ActivityResultCallback gets the result of this request.
             requestPermissionLauncher.launch(
@@ -162,7 +155,7 @@ public class PasswordDialog extends DialogFragment implements SurfaceHolder.Call
         if (isGranted) {
             // Permission is granted. Continue the action or workflow in your
             // app.
-            try{
+            try {
                 cameraSource.start(surfaceView.getHolder());
             } catch (IOException ie) {
                 ie.printStackTrace();
