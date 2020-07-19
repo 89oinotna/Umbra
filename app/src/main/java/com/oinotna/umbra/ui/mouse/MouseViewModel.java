@@ -34,6 +34,11 @@ public class MouseViewModel extends ViewModel implements MouseControl {
         mConnection = InputManager.getConnection();
     }
 
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+    }
+
     public LiveData<Byte> getConnection() {
         return mConnection;
     }

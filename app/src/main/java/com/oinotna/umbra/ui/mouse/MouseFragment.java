@@ -63,15 +63,7 @@ public class MouseFragment extends Fragment implements SensorEventListener, View
         btnMousePad = root.findViewById(R.id.btn_mouse_pad);
         Log.d("DISCONNECT", ""+mouseViewModel.isConnected());
         if(mouseViewModel.isConnected()){
-            sm = (SensorManager) requireActivity().getSystemService(Context.SENSOR_SERVICE);
 
-            btnMouseLeft.setOnTouchListener(this);
-            btnMouseRight.setOnTouchListener(this);
-            btnMouseWheel.setOnTouchListener(this);
-            btnMousePad.setOnTouchListener(this);
-
-            ActionBar ab=((AppCompatActivity)requireActivity()).getSupportActionBar();
-            Objects.requireNonNull(ab).setTitle(mouseViewModel.getPc().getName());
 
             setBroadcastReceiver();
             if(mNotification==null) {
@@ -80,6 +72,7 @@ public class MouseFragment extends Fragment implements SensorEventListener, View
                 mNotification=buildNotification();
                 notificationManager.notify(1, buildNotification());
             }
+
 
             mouseViewModel.getConnection().observe(getViewLifecycleOwner(), this);
         }
@@ -203,6 +196,19 @@ public class MouseFragment extends Fragment implements SensorEventListener, View
 
     @Override
     public void onResume() {
+        if(mouseViewModel.isConnected()) {
+            ActionBar ab = ((AppCompatActivity) requireActivity()).getSupportActionBar();
+            Objects.requireNonNull(ab).setTitle(mouseViewModel.getPc().getName().trim());
+
+            sm = (SensorManager) requireActivity().getSystemService(Context.SENSOR_SERVICE);
+
+            btnMouseLeft.setOnTouchListener(this);
+            btnMouseRight.setOnTouchListener(this);
+            btnMouseWheel.setOnTouchListener(this);
+            btnMousePad.setOnTouchListener(this);
+
+        }
+
         super.onResume();
         if(mouseViewModel.isConnected()) {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireActivity());

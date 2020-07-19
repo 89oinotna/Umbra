@@ -29,7 +29,7 @@ public class ServerPc {
     }
 
     public String getFullName() {
-        return name+":"+ip;
+        return name+"/"+ip;
     }
 
     @NotNull

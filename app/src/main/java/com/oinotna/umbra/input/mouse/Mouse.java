@@ -142,7 +142,7 @@ public class Mouse implements MouseControl {
 
     @Override
     public void setWheelSensitivity(int wheelSensitivity) {
-        this.wheelSensitivity=wheelSensitivity/50f;
+        this.wheelSensitivity=wheelSensitivity/25f;
     }
 
     /**
@@ -172,8 +172,7 @@ public class Mouse implements MouseControl {
     }
 
     public void setSensorSensitivity(int sensorSensitivity) {
-        float sensorSensitivityMultiplier = 900f;
-        this.sensorSensitivity=sensorSensitivity * sensorSensitivityMultiplier;
+        this.sensorSensitivity=sensorSensitivity * 900f;
     }
 
     public void resetSensor(){
