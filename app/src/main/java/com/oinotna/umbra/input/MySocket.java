@@ -63,6 +63,12 @@ public class MySocket implements Runnable {
 
     private Thread mThread;
 
+    private OnDisconnectListener mListener;
+
+    public void setOnDisconnectListener(OnDisconnectListener listener) {
+        mListener=listener;
+    }
+
     private class Command{
         //todo command abstract con encrypt e poi implementazioni per ogni componente (mouse ecc)
         private byte[] command;
@@ -131,8 +137,12 @@ public class MySocket implements Runnable {
         }
     }
 
+    public interface OnDisconnectListener{
+        void onDisconnect();
+    }
+
     public MySocket() {
-        this.executor= Executors.newSingleThreadExecutor();
+
     }
 
     public ServerPc getPc() {
@@ -141,12 +151,12 @@ public class MySocket implements Runnable {
 
     public void connect(ServerPc pc, MutableLiveData<Byte> mConnection) {
         //Se mi voglio connettere allo stesso
-        if(mConnection.getValue()!=null && this.pc!=null &&
+       /* if(mConnection.getValue()!=null && this.pc!=null &&
                 (mConnection.getValue() == MySocket.CONNECTED_PASSWORD || mConnection.getValue() == MySocket.CONNECTED)
                 && this.pc.getName().equals(pc.getName())){
             mConnection.postValue(mConnection.getValue());
             return;
-        }
+        }*/
 
         this.pc=pc;
         this.k=null;
@@ -155,6 +165,8 @@ public class MySocket implements Runnable {
         if(mThread!=null) {
             disconnect();
         }
+
+        this.executor= Executors.newSingleThreadExecutor();
 
         mThread = new Thread(this);
         mThread.start();
@@ -165,6 +177,7 @@ public class MySocket implements Runnable {
      * Initialize secret key if connected with password
      */
     public void usePassword(ServerPc pc) {
+        this.pc=pc;
         executor.execute(() -> {
             OutputStream writer = null;
             try{
@@ -189,9 +202,11 @@ public class MySocket implements Runnable {
             mThread.interrupt();
             mThread=null;
             executor.shutdownNow();
-            socketUdp.close();
+            if(socketUdp!=null)
+                socketUdp.close();
             try {
-                socketTcp.close();
+                if(socketTcp!=null)
+                    socketTcp.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -253,6 +268,7 @@ public class MySocket implements Runnable {
      */
     @Override
     public void run() {
+        //Todo forse service sarebbe meglio???
         byte[] rb=new byte[1024];
         try {
             socketUdp=new DatagramSocket();
@@ -284,14 +300,17 @@ public class MySocket implements Runnable {
                     }
                 }
                 //se mi disconnetto lato server read restituisce -1 e vado qua
+
+                mListener.onDisconnect();
                 mConnection.postValue(DISCONNECTED);
                 Log.d("DISCONNECT", "from server");
             } catch (IOException e) {
                 //se mi disconnetto lato app vado qua perchè chiudo il socket
                 e.printStackTrace();
                 Log.d("DISCONNECT", "from app");
+                mListener.onDisconnect();
                 mConnection.postValue(DISCONNECTED);
-            }
+            } //todo posso spostare in finally
         }catch (IOException e){
             e.printStackTrace();
             mConnection.postValue(CONNECTION_ERROR);

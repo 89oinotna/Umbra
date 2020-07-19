@@ -8,8 +8,6 @@ import androidx.lifecycle.MutableLiveData;
 import com.oinotna.umbra.db.ServerPc;
 import com.oinotna.umbra.input.mouse.Mouse;
 
-import java.io.IOException;
-
 public class InputManager {
     private static MySocket mSocket;
     private static Mouse mMouse;
@@ -99,4 +97,7 @@ public class InputManager {
     }
 
 
+    public static void setOnDisconnectListener(MySocket.OnDisconnectListener listener) {
+        mSocket.setOnDisconnectListener(listener);
+    }
 }

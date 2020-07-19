@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
             setupBottomNavigationBar()
         } // Else, need to wait for onRestoreInstanceState
         secretKeyViewModel=ViewModelProvider(this).get(SecretKeyViewModel::class.java)
-        secretKeyViewModel.aesKey=getAESKey();
+        secretKeyViewModel.aesKey=getAESKey()
         createNotificationChannel()
     }
 

@@ -9,7 +9,6 @@ import androidx.lifecycle.MutableLiveData;
 import com.oinotna.umbra.db.ServerPc;
 import com.oinotna.umbra.db.ServerPcRepository;
 import com.oinotna.umbra.thread.Finder;
-import com.oinotna.umbra.thread.MyInterruptThread;
 
 import java.io.IOException;
 import java.net.InetAddress;

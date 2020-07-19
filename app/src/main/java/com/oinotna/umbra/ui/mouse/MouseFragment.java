@@ -33,11 +33,12 @@ import androidx.preference.PreferenceManager;
 import com.oinotna.umbra.MainActivity;
 import com.oinotna.umbra.MyBroadcastReceiver;
 import com.oinotna.umbra.R;
+import com.oinotna.umbra.input.InputManager;
 import com.oinotna.umbra.input.MySocket;
 
 import java.util.Objects;
 
-public class MouseFragment extends Fragment implements SensorEventListener, View.OnTouchListener, SharedPreferences.OnSharedPreferenceChangeListener, Observer<Byte> {
+public class MouseFragment extends Fragment implements MySocket.OnDisconnectListener, SensorEventListener, View.OnTouchListener, SharedPreferences.OnSharedPreferenceChangeListener, Observer<Byte> {
 
     private MouseViewModel mouseViewModel;
 
@@ -63,8 +64,7 @@ public class MouseFragment extends Fragment implements SensorEventListener, View
         btnMousePad = root.findViewById(R.id.btn_mouse_pad);
         Log.d("DISCONNECT", ""+mouseViewModel.isConnected());
         if(mouseViewModel.isConnected()){
-
-
+            InputManager.setOnDisconnectListener(this);
             setBroadcastReceiver();
             if(mNotification==null) {
                 NotificationManagerCompat notificationManager = NotificationManagerCompat.from(requireActivity().getApplicationContext());
@@ -74,7 +74,7 @@ public class MouseFragment extends Fragment implements SensorEventListener, View
             }
 
 
-            mouseViewModel.getConnection().observe(getViewLifecycleOwner(), this);
+            mouseViewModel.getConnection().observe(requireActivity(), this);
         }
 
         return root;
@@ -89,9 +89,6 @@ public class MouseFragment extends Fragment implements SensorEventListener, View
             br = new MyBroadcastReceiver(intent -> {
                 //todo controllare intent
                 if (intent != null && MyBroadcastReceiver.ACTION_DISCONNECT.equals(intent.getAction())) {
-                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(requireActivity().getApplicationContext());
-                    notificationManager.cancel(1);//1: notification id from notify
-                    mNotification=null;
                     mouseViewModel.disconnect();
                 }
             });
@@ -245,6 +242,8 @@ public class MouseFragment extends Fragment implements SensorEventListener, View
         if(aByte == MySocket.DISCONNECTED){
             mouseViewModel.getConnection().removeObserver(this);
 
+            mouseViewModel.disconnect();
+
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireActivity());
             prefs.unregisterOnSharedPreferenceChangeListener(this);
 
@@ -255,13 +254,21 @@ public class MouseFragment extends Fragment implements SensorEventListener, View
 
             sm.unregisterListener(this, sm.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR));
 
-            mouseViewModel.disconnect();
-
-            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(requireActivity().getApplicationContext());
-            notificationManager.cancel(1);
-
             ActionBar ab=((AppCompatActivity)requireActivity()).getSupportActionBar();
             Objects.requireNonNull(ab).setTitle(getString(R.string.title_mouse));
         }
+    }
+
+    /**
+     * Used to remove notification when disconnected and app is in background
+     */
+    @Override
+    public void onDisconnect() {
+        requireActivity().runOnUiThread(() -> {
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(requireActivity().getApplicationContext());
+            notificationManager.cancel(1);
+            mNotification=null;
+        });
+
     }
 }

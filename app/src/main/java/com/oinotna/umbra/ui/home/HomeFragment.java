@@ -26,7 +26,6 @@ import com.oinotna.umbra.db.ServerPc;
 import com.oinotna.umbra.input.MySocket;
 import com.oinotna.umbra.ui.mouse.MouseViewModel;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -184,7 +183,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
     @Override
     public void onChanged(Byte o) {
         if(o == MySocket.CONNECTED || o == MySocket.CONNECTED_PASSWORD) {
+
             ((BottomNavigationView) requireActivity().findViewById(R.id.nav_view)).setSelectedItemId(R.id.mouse);
+
         }
         else if(o == MySocket.REQUIRE_PASSWORD){
             LiveData<ServerPc> pc=homeViewModel.getPC(mouseViewModel.getPc().getName());
@@ -246,11 +247,17 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
         passwordDialogViewModel.getPassword().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(String s) {
+                passwordDialogViewModel.getPassword().removeObserver(this);
                 ServerPc store=new ServerPc(pc.getName(), pc.getIp());
                 store.setPassword(secretKeyViewModel.encrypt(s.getBytes()));
                 homeViewModel.storePc(store); //salvo nel db
-                mouseViewModel.usePassword(s); //riprovo la connessione con la password
-                passwordDialogViewModel.getPassword().removeObserver(this);
+                pc.setPassword(s);
+                if(mouseViewModel.getConnection()!=null
+                        && mouseViewModel.getConnection().getValue()!=null
+                        &&
+                        (mouseViewModel.getConnection().getValue()==MySocket.REQUIRE_PASSWORD || mouseViewModel.getConnection().getValue()==MySocket.WRONG_PASSWORD))
+                    mouseViewModel.usePassword(s); //riprovo la connessione con la password
+
             }
         });
         DialogFragment df = new PasswordDialog();

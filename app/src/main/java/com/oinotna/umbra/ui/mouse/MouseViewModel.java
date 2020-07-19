@@ -9,11 +9,9 @@ import androidx.lifecycle.ViewModel;
 
 import com.oinotna.umbra.db.ServerPc;
 import com.oinotna.umbra.input.InputManager;
+import com.oinotna.umbra.input.MySocket;
 import com.oinotna.umbra.input.mouse.Mouse;
 import com.oinotna.umbra.input.mouse.MouseControl;
-import com.oinotna.umbra.input.MySocket;
-
-import java.io.IOException;
 
 public class MouseViewModel extends ViewModel implements MouseControl {
 
@@ -56,8 +54,9 @@ public class MouseViewModel extends ViewModel implements MouseControl {
      * @param pc
      */
     public void connect(ServerPc pc)  {
-        InputManager.connect(pc);
         this.pc=pc;
+        InputManager.connect(pc);
+
     }
 
     /**
@@ -73,6 +72,7 @@ public class MouseViewModel extends ViewModel implements MouseControl {
      * Disconnect the mouse from server
      */
     public void disconnect() {
+        pc=null;
         InputManager.disconnect();
     }
 

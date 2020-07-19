@@ -7,11 +7,11 @@ import androidx.lifecycle.ViewModel;
 public class PasswordDialogViewModel extends ViewModel {
     private MutableLiveData<String> password;
 
-    public PasswordDialogViewModel() {
-        password=new MutableLiveData<>();
+    public PasswordDialogViewModel(){
     }
 
     public LiveData<String> getPassword(){
+        password=new MutableLiveData<>();
         return password;
     }
 
