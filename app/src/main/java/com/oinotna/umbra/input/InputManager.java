@@ -15,14 +15,16 @@ public class InputManager {
     private static Mouse mMouse;
     private static MutableLiveData<Byte> mConnection;
 
+    public static MutableLiveData<Byte> getConnection() {
+        if(mConnection==null)
+            mConnection= new MutableLiveData<>();
+        return mConnection;
+    }
+
+    /*          SOCKET          */
     public static boolean connect(ServerPc pc){
         if(mSocket==null){
-            try {
-                mSocket=new MySocket();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return false;
-            }
+            mSocket=new MySocket();
         }
         mSocket.connect(pc, mConnection);
         if(mMouse==null)
@@ -51,6 +53,7 @@ public class InputManager {
             mSocket.usePassword(pc);
     }
 
+    /*          MOUSE           */
     public static boolean mouse(Mouse.Type type, Object event){
         if(mMouse==null) return false;
         switch (type){
@@ -95,9 +98,5 @@ public class InputManager {
         return mMouse;
     }
 
-    public static MutableLiveData<Byte> getConnection() {
-        if(mConnection==null)
-            mConnection= new MutableLiveData<>();
-        return mConnection;
-    }
+
 }

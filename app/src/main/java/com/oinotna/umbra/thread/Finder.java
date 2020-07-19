@@ -34,21 +34,9 @@ public class Finder implements RunnableWithSocket {
     private static Finder instance;
     private static MyInterruptThread mThread;
 
-    public Finder(/*InetAddress broadcast, ArrayList<ServerPc> serversList, MutableLiveData<Boolean> serversLiveData*/) throws SocketException {
-        //this.serversList=serversList;
-        //this.serversLiveData=serversLiveData;
+    public Finder() throws SocketException {
         socket=new DatagramSocket(portFinder);
         executor= Executors.newSingleThreadExecutor();
-        //this.broadcast=broadcast;
-    }
-
-    public static void search(InetAddress broadcast, ArrayList<ServerPc> serversList, MutableLiveData<Boolean> serversLiveData) throws SocketException {
-        Finder f=getInstance(serversList, serversLiveData);
-        if(mThread==null){
-            mThread=new MyInterruptThread(f);
-            mThread.start();
-        }
-        f.send(broadcast);
     }
 
     private static Finder getInstance(ArrayList<ServerPc> serversList, MutableLiveData<Boolean> serversLiveData) throws SocketException {
@@ -60,6 +48,22 @@ public class Finder implements RunnableWithSocket {
         return instance;
     }
 
+    /**
+     * Search for servers
+     * @param broadcast
+     * @param serversList
+     * @param serversLiveData
+     * @throws SocketException
+     */
+    public static void search(InetAddress broadcast, ArrayList<ServerPc> serversList, MutableLiveData<Boolean> serversLiveData) throws SocketException {
+        Finder f=getInstance(serversList, serversLiveData);
+        if(mThread==null){
+            mThread=new MyInterruptThread(f);
+            mThread.start();
+        }
+        f.send(broadcast);
+    }
+
     public static void endSearch() {
         if(mThread!=null){
             mThread.interrupt();
@@ -68,14 +72,21 @@ public class Finder implements RunnableWithSocket {
         }
     }
 
+    /**
+     * Used to notify changes
+     * @param serversLiveData
+     */
     private void setServersLiveData(MutableLiveData<Boolean> serversLiveData) {
         this.serversLiveData=serversLiveData;
     }
 
+    /**
+     * Used to store alive servers
+     * @param serversList
+     */
     private void setServersList(ArrayList<ServerPc> serversList) {
         this.serversList=serversList;
     }
-
 
     @Override
     public void run() {
@@ -87,7 +98,6 @@ public class Finder implements RunnableWithSocket {
                 byte[] received= dp.getData();
                 try {
                     String receivedString = new String(received);
-                    //TODO use byte instead of "server"
                     String[] tokens = receivedString.split(":");
                     ServerPc pc = new ServerPc(tokens[1], dp.getAddress().toString().split("/")[1]);
                     if (received[0] == ALIVE && !serversList.contains(pc)) {
@@ -104,6 +114,10 @@ public class Finder implements RunnableWithSocket {
         }
     }
 
+    /**
+     * Send broadcast message
+     * @param broadcast address
+     */
     public void send(InetAddress broadcast)  {
         executor.execute(()->{
             final byte[] message = new byte[]{BROADCAST};
@@ -114,7 +128,6 @@ public class Finder implements RunnableWithSocket {
                 e.printStackTrace();
             }
         });
-
     }
 
     public DatagramSocket getSocket() {

@@ -21,9 +21,6 @@ public class Mouse implements MouseControl {
     public static byte PAD_MOVE=0x06;
     public static byte SENSOR_MOVE=0x07;
 
-    //private MySocket socket;
-    //private Thread thSocket;
-
     private float[] lastWheel;
     private float[] lastPad;
     private float[] lastSensor;
@@ -31,28 +28,13 @@ public class Mouse implements MouseControl {
     private float wheelSensitivity;
     private float padSensitivity;
     private float sensorSensitivity;
-    private static int sensorSensitivityMultiplier=900;
 
 
-    public Mouse(/*ServerPc pc, MutableLiveData<Byte> mConnection*/) {
+    public Mouse() {
         this.lastWheel=new float[]{-1,-1};
         this.lastPad=new float[]{-1,-1};
         this.lastSensor=new float[]{-1,-1};
-
-        //creo il socket e mi metto in ascolto
-        /*this.socket=new MySocket(pc, mConnection);
-        this.thSocket=new Thread(socket);
-        this.thSocket.start();*/
     }
-
-    /*public void tryConnection(){
-       this.socket.tryConnection();
-    }
-
-    public void close() {
-        socket.disconnect();
-        thSocket.interrupt();
-    }*/
 
     @Override
     public boolean left(MotionEvent event) {
@@ -89,7 +71,7 @@ public class Mouse implements MouseControl {
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
                 //initialize the point
-                lastWheel[0]=event.getX();
+                //lastWheel[0]=event.getX();
                 lastWheel[1]=event.getY();
             case MotionEvent.ACTION_MOVE:
                 // new position
@@ -97,12 +79,13 @@ public class Mouse implements MouseControl {
                 final float y = event.getY();
 
                 final float deltaY = (y-lastWheel[1])*wheelSensitivity;
+                lastWheel[1]=y;
                 //TODO maybe sampling for better performance
                 InputManager.push(WHEEL_MOVE, new float[]{0, deltaY});
                 break;
             case MotionEvent.ACTION_UP:
                 //reset (do i need this?)
-                lastWheel[0]=-1;
+                //lastWheel[0]=-1;
                 lastWheel[1]=-1;
                 break;
             default:
@@ -113,6 +96,11 @@ public class Mouse implements MouseControl {
 
     private long timestampPad;
 
+    /**
+     * Moving with pad values
+     * @param event
+     * @return
+     */
     @Override
     public boolean move(MotionEvent event) {
         switch (event.getAction()){
@@ -157,6 +145,10 @@ public class Mouse implements MouseControl {
         this.wheelSensitivity=wheelSensitivity/50f;
     }
 
+    /**
+     * Moving with sensor values
+     * @param event
+     */
     @Override
     public void move(SensorEvent event) {
        /* final float x=event.values[0];  //screen y
@@ -180,7 +172,8 @@ public class Mouse implements MouseControl {
     }
 
     public void setSensorSensitivity(int sensorSensitivity) {
-        this.sensorSensitivity=sensorSensitivity*sensorSensitivityMultiplier;
+        float sensorSensitivityMultiplier = 900f;
+        this.sensorSensitivity=sensorSensitivity * sensorSensitivityMultiplier;
     }
 
     public void resetSensor(){
@@ -188,7 +181,4 @@ public class Mouse implements MouseControl {
         lastSensor[1]=-1;
     }
 
-    /*public ServerPc getPc() {
-        return socket.getPc();
-    }*/
 }

@@ -52,6 +52,7 @@ public class ServerPc {
 
     @Override
     public boolean equals(@Nullable Object obj) {
+        if(obj==null) return false;
         return name.equals(((ServerPc)obj).getName());
     }
 }

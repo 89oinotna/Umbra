@@ -99,6 +99,7 @@ public class PasswordDialog extends DialogFragment implements SurfaceHolder.Call
     }
 
     /* ------ SURFACE VIEW -------- */
+
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         if (ContextCompat.checkSelfPermission(
@@ -130,12 +131,13 @@ public class PasswordDialog extends DialogFragment implements SurfaceHolder.Call
     }
 
     /* ------ BARCODE PROCESSOR -------- */
+
     @Override
     public void release() {
 
     }
 
-    //Non runna su ui
+    //Non runna su UI Thread
     @Override
     public void receiveDetections(Detector.Detections<Barcode> detections) {
         final SparseArray<Barcode> barcodes = detections.getDetectedItems();
@@ -149,6 +151,7 @@ public class PasswordDialog extends DialogFragment implements SurfaceHolder.Call
     }
 
     /* ------ CALLBACK PERMISSION RESULT -------- */
+
     @SuppressLint("MissingPermission")
     @Override
     public void onActivityResult(Boolean isGranted) {

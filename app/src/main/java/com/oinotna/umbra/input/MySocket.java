@@ -63,37 +63,8 @@ public class MySocket implements Runnable {
 
     private Thread mThread;
 
-    public boolean connect(ServerPc pc, MutableLiveData<Byte> mConnection) {
-        //Se mi voglio connettere allo stesso
-        if(mConnection.getValue()!=null && this.pc!=null &&
-                (mConnection.getValue() == MySocket.CONNECTED_PASSWORD || mConnection.getValue() == MySocket.CONNECTED)
-                && this.pc.getName().equals(pc.getName())){
-            mConnection.postValue(mConnection.getValue());
-            return false;
-        }
-
-        this.pc=pc;
-        this.k=null;
-        this.mConnection=mConnection;
-
-        if(mThread!=null) {
-            disconnect();
-        }
-
-        mThread = new Thread(this);
-        mThread.start();
-
-        return true;
-    }
-
-
-    public ServerPc getPc() {
-        return  pc;
-    }
-
-
-
     private class Command{
+        //todo command abstract con encrypt e poi implementazioni per ogni componente (mouse ecc)
         private byte[] command;
 
         /**
@@ -160,11 +131,33 @@ public class MySocket implements Runnable {
         }
     }
 
-    public MySocket(/*ServerPc pc, MutableLiveData<Byte> mConnection*/) throws IOException {
-        //this.mConnection=mConnection;
-        //this.pc=pc;
-        this.socketUdp=new DatagramSocket();
+    public MySocket() {
         this.executor= Executors.newSingleThreadExecutor();
+    }
+
+    public ServerPc getPc() {
+        return  pc;
+    }
+
+    public void connect(ServerPc pc, MutableLiveData<Byte> mConnection) {
+        //Se mi voglio connettere allo stesso
+        if(mConnection.getValue()!=null && this.pc!=null &&
+                (mConnection.getValue() == MySocket.CONNECTED_PASSWORD || mConnection.getValue() == MySocket.CONNECTED)
+                && this.pc.getName().equals(pc.getName())){
+            mConnection.postValue(mConnection.getValue());
+            return;
+        }
+
+        this.pc=pc;
+        this.k=null;
+        this.mConnection=mConnection;
+
+        if(mThread!=null) {
+            disconnect();
+        }
+
+        mThread = new Thread(this);
+        mThread.start();
     }
 
     /**
@@ -189,7 +182,7 @@ public class MySocket implements Runnable {
     }
 
     /**
-     * Effettua la disconnessione
+     * Disconnection
      */
     public void disconnect() {
         if (mConnection.getValue() != null) {
@@ -206,11 +199,12 @@ public class MySocket implements Runnable {
     }
 
     /**
-     * Genera secretKey dai byte della key in base64
+     * Generates the SecretKey from the key stored in base64
      * @param password
      * @return
      */
     private SecretKey decodeKeyFromBase64(String password){
+        //todo spostare da qualche altra parte
         byte[] decoded;
         // get base64 encoded version of the key
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -223,7 +217,7 @@ public class MySocket implements Runnable {
     }
 
     /**
-     * Comandi (tasti)
+     * Send static action (button press)
      * @param action
      */
     public void push(byte action){
@@ -231,7 +225,7 @@ public class MySocket implements Runnable {
     }
 
     /**
-     * Comandi con coordinate (pad, sensore, wheel)
+     * Send movement action (pad, sensor, wheel)
      * @param action
      * @param coord
      */
@@ -259,45 +253,51 @@ public class MySocket implements Runnable {
      */
     @Override
     public void run() {
-        //todo verify ip
-
         byte[] rb=new byte[1024];
         try {
-            ipAddress= Inet4Address.getByName(pc.getIp());
-            socketTcp=new Socket(ipAddress, portConnectionPc);
-            InputStream reader =socketTcp.getInputStream();
-            OutputStream writer = socketTcp.getOutputStream();
+            socketUdp=new DatagramSocket();
+            ipAddress = Inet4Address.getByName(pc.getIp());
+            socketTcp = new Socket(ipAddress, portConnectionPc);
+            try{
+                InputStream reader =socketTcp.getInputStream();
+                OutputStream writer = socketTcp.getOutputStream();
 
-            if(pc.getPassword()!=null){
-                this.k= decodeKeyFromBase64(pc.getPassword());
-            }
-            //genero il comando per la connessione
-            byte[] s = new Command(pc.getPassword(), k).command;
-            writer.write(s);
-            int readBytes;
-            while(!Thread.interrupted() && (readBytes=reader.read(rb)) > -1) {
-                //socketUdp.receive(dp);
-                //r = dp.getData();
-                Log.d("Received", new String(rb));
-                if (rb[0] == CONNECTED) {
-                    mConnection.postValue(CONNECTED);
-                } else if (rb[0] == REQUIRE_PASSWORD) {
-                    mConnection.postValue(REQUIRE_PASSWORD);
-                } else if (rb[0] == WRONG_PASSWORD) {
-                    mConnection.postValue(WRONG_PASSWORD);
-                } else if (rb[0] == CONNECTED_PASSWORD) {
-                    mConnection.postValue(CONNECTED_PASSWORD);
-                }else if (rb[0] == CONNECTION_ERROR) {
-                    mConnection.postValue(CONNECTION_ERROR);
+                if(pc.getPassword()!=null){
+                    this.k= decodeKeyFromBase64(pc.getPassword());
                 }
+                //genero il comando per la connessione
+                byte[] s = new Command(pc.getPassword(), k).command;
+                writer.write(s);
+                int readBytes;
+                while(!Thread.interrupted() && (readBytes=reader.read(rb)) > -1) {
+                    Log.d("Received", new String(rb));
+                    if (rb[0] == CONNECTED) {
+                        mConnection.postValue(CONNECTED);
+                    } else if (rb[0] == REQUIRE_PASSWORD) {
+                        mConnection.postValue(REQUIRE_PASSWORD);
+                    } else if (rb[0] == WRONG_PASSWORD) {
+                        mConnection.postValue(WRONG_PASSWORD);
+                    } else if (rb[0] == CONNECTED_PASSWORD) {
+                        mConnection.postValue(CONNECTED_PASSWORD);
+                    }else if (rb[0] == CONNECTION_ERROR) {
+                        mConnection.postValue(CONNECTION_ERROR);
+                    }
+                }
+                //se mi disconnetto lato server read restituisce -1 e vado qua
+                mConnection.postValue(DISCONNECTED);
+                Log.d("DISCONNECT", "from server");
+            } catch (IOException e) {
+                //se mi disconnetto lato app vado qua perchè chiudo il socket
+                e.printStackTrace();
+                Log.d("DISCONNECT", "from app");
+                mConnection.postValue(DISCONNECTED);
             }
-            //se mi disconnetto lato server read restituisce -1 e vado qua
-            mConnection.postValue(DISCONNECTED);
-        } catch (IOException e) {
-            //se mi disconnetto lato app vado qua perchè chiudo il socket
+        }catch (IOException e){
             e.printStackTrace();
-            mConnection.postValue(DISCONNECTED);
+            mConnection.postValue(CONNECTION_ERROR);
+            this.disconnect();
         }
+
 
 
     }

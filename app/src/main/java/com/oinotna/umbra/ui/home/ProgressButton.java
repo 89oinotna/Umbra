@@ -21,7 +21,7 @@ import com.oinotna.umbra.R;
 
 public class ProgressButton extends MaterialButton {
     private GradientDrawable mGradientDrawable;
-    private CircularAnimatedDrawable mAnimatedDrawable;
+    private CircularAnimatedDrawable mAnimatedDrawable; //spinner
 
     private OnAnimationEndListener mListener;
 
@@ -66,6 +66,7 @@ public class ProgressButton extends MaterialButton {
         mState=State.IDLE;
     }
 
+    //Used to restore previous state
     private int mStartingWidth;
     private int mStartingHeight;
 
@@ -109,6 +110,7 @@ public class ProgressButton extends MaterialButton {
                 }
                 else{
                     bt.setText(R.string.search_button);
+                    bt.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_menu_search_white, 0, 0, 0);
                     mState=State.IDLE;
                     setClickable(true);
                 }
@@ -151,6 +153,7 @@ public class ProgressButton extends MaterialButton {
         int finalCornerRadius = 1000;
 
         this.setText(null);
+        this.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
         setClickable(false);
 
         mState = State.PROGRESS_IDLE;
@@ -160,6 +163,9 @@ public class ProgressButton extends MaterialButton {
 
     }
 
+    /**
+     * Restore the previous state of the button
+     */
     public void startEndAnimation(){
         if(mState != State.CIRCLE){
             return;
@@ -185,6 +191,7 @@ public class ProgressButton extends MaterialButton {
     protected void onDraw(Canvas canvas){
         super.onDraw(canvas);
 
+        //Quando ho finito inizio con lo spinner
         if (mState == State.CIRCLE && !mIsMorphingInProgress) {
             drawIndeterminateProgress(canvas); //loading spinner
         }

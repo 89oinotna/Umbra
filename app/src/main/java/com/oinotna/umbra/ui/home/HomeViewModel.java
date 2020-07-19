@@ -16,7 +16,6 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 
 public class HomeViewModel extends AndroidViewModel {
-    //private MyInterruptThread thFinder;
 
     private MutableLiveData<Boolean> serversLiveData; //livedata che uso solo per far triggerare gli observer
 
@@ -60,31 +59,12 @@ public class HomeViewModel extends AndroidViewModel {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        /*if(thFinder==null){
-            try {
-                //todo lasciare finder e inviare solo nuovo broadcast
-                //todo finder gestisce tutto in modo trasparente
-                //thFinder=new MyInterruptThread(new Finder(broadcast, serversList, serversLiveData));
-                //thFinder.start();
-                Finder.search(broadcast, serversList, serversLiveData);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        else{
-            thFinder.interrupt();
-            thFinder=null;
-            searchForServers(broadcast);
-        }*/
     }
 
     /**
      * Ends the Finder
      */
     public void endSearch() {
-        /*if(thFinder!=null)
-            thFinder.interrupt();
-        thFinder=null*/
         Finder.endSearch();
     }
 

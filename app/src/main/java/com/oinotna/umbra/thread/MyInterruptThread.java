@@ -21,7 +21,4 @@ public class MyInterruptThread extends Thread {
         this.socket.close(); //mi sblocca la read (IOException)
     }
 
-    public void interruptOnly(){
-        super.interrupt();
-    }
 }

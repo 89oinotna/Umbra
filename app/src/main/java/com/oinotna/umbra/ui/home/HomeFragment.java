@@ -122,6 +122,18 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
     }
 
     /**
+     * When button animation end restore previous state
+     * Make toast if nothing found
+     */
+    @Override
+    public void onAnimationEnd() {
+        btnSearch.startEndAnimation(); //per farla a contrario
+        if(serversList.isEmpty()){
+            Toast.makeText(requireActivity(), R.string.toast_nothing_found, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
      * onItemClick for CardView inside the RecyclerView
      * End server search and connect to selected server
      * @param position position of the selected server
@@ -131,12 +143,21 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
         ServerPc pc = serversList.get(position);
         Log.d("LOG", "connessione a: " + pc.getFullName());
         homeViewModel.endSearch();
-        try {
-            mouseViewModel.connect(pc);
-        }catch (IOException e){
-            e.printStackTrace();
-            Toast.makeText(requireActivity(), R.string.toast_cant_connect, Toast.LENGTH_SHORT).show();
+        mouseViewModel.connect(pc);
+    }
+
+    /**
+     * Click on the ContextMenu of a CardView
+     * @param itemId id of the selected menu item
+     * @param position position of the server in the list
+     */
+    @Override
+    public boolean onMenuItemClick(int itemId, int position) {
+        if(itemId==1){
+            requirePassword(serversList.get(position));
+            return true; //todo ok???
         }
+        return false;
     }
 
     /**
@@ -174,6 +195,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
             requirePassword(mouseViewModel.getPc());
         }
         else if(o == MySocket.CONNECTION_ERROR) { //CONNECTION_ERROR
+            mouseViewModel.setPc(null);
             Toast.makeText(requireActivity(), R.string.toast_cant_connect, Toast.LENGTH_SHORT).show();
         }
     }
@@ -214,20 +236,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
     }
 
     /**
-     * Click on the ContextMenu of a CardView
-     * @param itemId id of the selected menu item
-     * @param position position of the server in the list
-     */
-    @Override
-    public boolean onMenuItemClick(int itemId, int position) {
-        if(itemId==1){
-            requirePassword(serversList.get(position));
-            return true; //todo ok???
-        }
-        return false;
-    }
-
-    /**
      * Requires password for a server
      * Shows a PasswordDialog and retrieve password from it
      * Stores the password
@@ -249,15 +257,4 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
         df.show(requireActivity().getSupportFragmentManager(), "password");
     }
 
-    /**
-     * When button animation end restore previous state
-     * Make toast if nothing found
-     */
-    @Override
-    public void onAnimationEnd() {
-        btnSearch.startEndAnimation(); //per farla a contrario
-        if(serversList.isEmpty()){
-            Toast.makeText(requireActivity(), R.string.toast_nothing_found, Toast.LENGTH_SHORT).show();
-        }
-    }
 }

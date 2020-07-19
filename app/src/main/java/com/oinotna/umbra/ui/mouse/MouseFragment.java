@@ -13,6 +13,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -60,7 +61,7 @@ public class MouseFragment extends Fragment implements SensorEventListener, View
         btnMouseRight = root.findViewById(R.id.btn_mouse_right);
         btnMouseWheel = root.findViewById(R.id.btn_mouse_wheel);
         btnMousePad = root.findViewById(R.id.btn_mouse_pad);
-
+        Log.d("DISCONNECT", ""+mouseViewModel.isConnected());
         if(mouseViewModel.isConnected()){
             sm = (SensorManager) requireActivity().getSystemService(Context.SENSOR_SERVICE);
 
@@ -170,7 +171,7 @@ public class MouseFragment extends Fragment implements SensorEventListener, View
             default:
                 return false;
         }
-        return true;
+        return false; //for button press animation
     }
 
     @Override

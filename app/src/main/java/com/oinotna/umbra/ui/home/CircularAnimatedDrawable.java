@@ -32,13 +32,15 @@ public class CircularAnimatedDrawable extends Drawable implements Animatable {
     private float mBorderWidth;
     private float mCurrentGlobalAngle;
     private float mCurrentSweepAngle;
-    //private float mCurrentGlobalAngleOffset;
 
-    //private boolean mModeAppearing=false;
     private boolean mRunning;
 
     private ProgressButton.OnAnimationEndListener mListener;
 
+    /**
+     * Called when animation ends
+     * @param listener
+     */
     public void setOnAnimationEndListener(ProgressButton.OnAnimationEndListener listener){
         mListener=listener;
     }
@@ -57,7 +59,9 @@ public class CircularAnimatedDrawable extends Drawable implements Animatable {
         setupAnimations();
     }
 
-
+    /**
+     * Prepare the animation
+     */
     private void setupAnimations() {
         mValueAnimatorAngle = ValueAnimator.ofFloat(0, 360f);
         mValueAnimatorAngle.setInterpolator(ANGLE_INTERPOLATOR);
@@ -104,7 +108,7 @@ public class CircularAnimatedDrawable extends Drawable implements Animatable {
     @Override
     protected void onBoundsChange(Rect bounds) {
         super.onBoundsChange(bounds);
-        //stroke all'interno
+        //per lo stroke all'interno del cerchio
         fBounds.left = bounds.left + mBorderWidth / 2f + .5f;
         fBounds.right = bounds.right - mBorderWidth / 2f - .5f;
         fBounds.top = bounds.top + mBorderWidth / 2f + .5f;
@@ -135,20 +139,13 @@ public class CircularAnimatedDrawable extends Drawable implements Animatable {
         return mRunning;
     }
 
-    /**
-     * Method called when the drawable is going to draw itself.
-     * @param canvas
-     */
     @Override
     public void draw(Canvas canvas) {
-        float startAngle = mCurrentGlobalAngle; //- mCurrentGlobalAngleOffset;
+        float startAngle = mCurrentGlobalAngle;
         float sweepAngle = mCurrentSweepAngle;
-        //if (!mModeAppearing) {
-            startAngle = startAngle + sweepAngle;
-            sweepAngle = 360 - sweepAngle - MIN_SWEEP_ANGLE;
-        /*} else {
-            sweepAngle += MIN_SWEEP_ANGLE;
-        }*/
+
+        startAngle = startAngle + sweepAngle;
+        sweepAngle = 360 - sweepAngle - MIN_SWEEP_ANGLE;
 
         //Paint attribute decides the style of the Arc (Fill or Stroke etc).
         // Oval parameter decides the shape and size of the arc. Start angle (in degrees)
