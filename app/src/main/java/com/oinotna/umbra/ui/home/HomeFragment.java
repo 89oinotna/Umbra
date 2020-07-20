@@ -228,8 +228,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
                 }
                 //se non è presente devo chiedere la password
                 else {
-                    ServerPc pc=mouseViewModel.getPc();
-                    requirePassword(pc);
+                    //ServerPc pc=mouseViewModel.getPc();
+                    requirePassword(MySocket.getInstance().getPc());
                 }
             }
         });
