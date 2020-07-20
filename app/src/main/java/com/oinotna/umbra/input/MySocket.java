@@ -1,7 +1,11 @@
 package com.oinotna.umbra.input;
 
+import android.app.Application;
+import android.app.Service;
+import android.content.Intent;
 import android.util.Log;
 
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.oinotna.umbra.db.ServerPc;
@@ -62,8 +66,24 @@ public class MySocket implements Runnable {
     private Socket socketTcp;
 
     private Thread mThread;
-
     private OnDisconnectListener mListener;
+
+    private static MySocket instance;
+
+
+    public static MySocket getInstance() {
+        return instance;
+    }
+
+    public MutableLiveData<Byte> getConnection() {
+        if(mConnection==null)
+            mConnection= new MutableLiveData<>();
+        return mConnection;
+    }
+
+    public interface OnDisconnectListener{
+        void onDisconnect();
+    }
 
     public void setOnDisconnectListener(OnDisconnectListener listener) {
         mListener=listener;
@@ -137,47 +157,40 @@ public class MySocket implements Runnable {
         }
     }
 
-    public interface OnDisconnectListener{
-        void onDisconnect();
+
+    public MySocket(ServerPc pc) {
+        this.pc=pc;
+        executor= Executors.newSingleThreadExecutor();
+        mThread = new Thread(this);
+        mThread.start();
     }
 
-    public MySocket() {
-
+    public static boolean isConnected() {
+        if(instance==null) return false;
+        LiveData<Byte> mConnection=instance.getConnection();
+        return mConnection.getValue() != null &&
+                (mConnection.getValue() == MySocket.CONNECTED || mConnection.getValue() == MySocket.CONNECTED_PASSWORD);
     }
 
     public ServerPc getPc() {
         return  pc;
     }
 
-    public void connect(ServerPc pc, MutableLiveData<Byte> mConnection) {
-        //Se mi voglio connettere allo stesso
-       /* if(mConnection.getValue()!=null && this.pc!=null &&
-                (mConnection.getValue() == MySocket.CONNECTED_PASSWORD || mConnection.getValue() == MySocket.CONNECTED)
-                && this.pc.getName().equals(pc.getName())){
-            mConnection.postValue(mConnection.getValue());
-            return;
-        }*/
+    public static LiveData<Byte> connect(ServerPc pc) {
+        if(instance!=null)
+            instance.disconnect();
 
-        this.pc=pc;
-        this.k=null;
-        this.mConnection=mConnection;
+        instance=new MySocket(pc);
 
-        if(mThread!=null) {
-            disconnect();
-        }
-
-        this.executor= Executors.newSingleThreadExecutor();
-
-        mThread = new Thread(this);
-        mThread.start();
+        return instance.getConnection();
     }
 
     /**
      * Sends a connection request
      * Initialize secret key if connected with password
      */
-    public void usePassword(ServerPc pc) {
-        this.pc=pc;
+    public void usePassword(String password) {
+        pc.setPassword(password);
         executor.execute(() -> {
             OutputStream writer = null;
             try{
@@ -199,8 +212,10 @@ public class MySocket implements Runnable {
      */
     public void disconnect() {
         if (mConnection.getValue() != null) {
-            mThread.interrupt();
-            mThread=null;
+            if(mThread!=null) {
+                mThread.interrupt();
+                mThread=null;
+            }
             executor.shutdownNow();
             if(socketUdp!=null)
                 socketUdp.close();
@@ -268,7 +283,6 @@ public class MySocket implements Runnable {
      */
     @Override
     public void run() {
-        //Todo forse service sarebbe meglio???
         byte[] rb=new byte[1024];
         try {
             socketUdp=new DatagramSocket();
@@ -300,21 +314,25 @@ public class MySocket implements Runnable {
                     }
                 }
                 //se mi disconnetto lato server read restituisce -1 e vado qua
-
-                mListener.onDisconnect();
-                mConnection.postValue(DISCONNECTED);
                 Log.d("DISCONNECT", "from server");
             } catch (IOException e) {
                 //se mi disconnetto lato app vado qua perchè chiudo il socket
                 e.printStackTrace();
                 Log.d("DISCONNECT", "from app");
-                mListener.onDisconnect();
+            }
+            finally {
+                disconnect();
+                if (mListener != null) {
+                    mListener.onDisconnect();
+                    mListener = null;
+                }
                 mConnection.postValue(DISCONNECTED);
-            } //todo posso spostare in finally
+
+            }
         }catch (IOException e){
             e.printStackTrace();
+            disconnect();
             mConnection.postValue(CONNECTION_ERROR);
-            this.disconnect();
         }
 
 

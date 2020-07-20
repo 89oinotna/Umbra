@@ -39,7 +39,6 @@ public class CircularAnimatedDrawable extends Drawable implements Animatable {
 
     /**
      * Called when animation ends
-     * @param listener
      */
     public void setOnAnimationEndListener(ProgressButton.OnAnimationEndListener listener){
         mListener=listener;
@@ -67,12 +66,9 @@ public class CircularAnimatedDrawable extends Drawable implements Animatable {
         mValueAnimatorAngle.setInterpolator(ANGLE_INTERPOLATOR);
         mValueAnimatorAngle.setDuration(ANGLE_ANIMATOR_DURATION);
         //mValueAnimatorAngle.setRepeatCount(ValueAnimator.INFINITE);
-        mValueAnimatorAngle.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                mCurrentGlobalAngle = (float)animation.getAnimatedValue();
-                mAnimatedView.invalidate(); //triggera onDraw
-            }
+        mValueAnimatorAngle.addUpdateListener(animation -> {
+            mCurrentGlobalAngle = (float)animation.getAnimatedValue();
+            mAnimatedView.invalidate(); //triggera onDraw
         });
         mValueAnimatorAngle.addListener(new AnimatorListenerAdapter() {
             @Override
@@ -89,18 +85,14 @@ public class CircularAnimatedDrawable extends Drawable implements Animatable {
         mValueAnimatorSweep.setInterpolator(SWEEP_INTERPOLATOR);
         mValueAnimatorSweep.setDuration(SWEEP_ANIMATOR_DURATION);
         //mValueAnimatorSweep.setRepeatCount(ValueAnimator.INFINITE);
-        mValueAnimatorSweep.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                mCurrentSweepAngle = (float)animation.getAnimatedValue();
-                invalidateSelf();
-            }
+        mValueAnimatorSweep.addUpdateListener(animation -> {
+            mCurrentSweepAngle = (float)animation.getAnimatedValue();
+            invalidateSelf();
         });
         mValueAnimatorSweep.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationRepeat(Animator animation) {
                 //TODO: dovrei invertire l'animazione sweepangle
-
             }
         });
     }

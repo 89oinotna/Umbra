@@ -50,9 +50,7 @@ public class HomeViewModel extends AndroidViewModel {
      * @param broadcast
      */
     public void searchForServers(InetAddress broadcast)  {
-        //clear recycler view
-        serversList.clear();
-        serversLiveData.postValue(true);
+
         try{
             Finder.search(broadcast, serversList, serversLiveData);
         } catch (IOException e) {
@@ -60,12 +58,6 @@ public class HomeViewModel extends AndroidViewModel {
         }
     }
 
-    /**
-     * Ends the Finder
-     */
-    public void endSearch() {
-        Finder.endSearch();
-    }
 
     /**
      * Search for a server by it's name in database

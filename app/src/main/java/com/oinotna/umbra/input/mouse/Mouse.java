@@ -4,6 +4,7 @@ import android.hardware.SensorEvent;
 import android.view.MotionEvent;
 
 import com.oinotna.umbra.input.InputManager;
+import com.oinotna.umbra.input.MySocket;
 
 public class Mouse implements MouseControl {
 
@@ -28,6 +29,14 @@ public class Mouse implements MouseControl {
     private float wheelSensitivity;
     private float padSensitivity;
     private float sensorSensitivity;
+
+    private static Mouse instance;
+
+    public static Mouse getInstance(){
+        if(instance==null)
+            instance=new Mouse();
+        return instance;
+    }
 
 
     public Mouse() {

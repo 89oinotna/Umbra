@@ -24,6 +24,7 @@ import com.oinotna.umbra.R;
 import com.oinotna.umbra.SecretKeyViewModel;
 import com.oinotna.umbra.db.ServerPc;
 import com.oinotna.umbra.input.MySocket;
+import com.oinotna.umbra.thread.Finder;
 import com.oinotna.umbra.ui.mouse.MouseViewModel;
 
 import java.net.InetAddress;
@@ -83,8 +84,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
         homeViewModel.getLiveServersList().observe(getViewLifecycleOwner(), serverPcs -> mAdapter.notifyDataSetChanged());
 
         mouseViewModel =new ViewModelProvider(requireActivity()).get(MouseViewModel.class);
-        //registro l'observer sulla connessione
-        mouseViewModel.getConnection().observe(getViewLifecycleOwner(), this);
 
         secretKeyViewModel=new ViewModelProvider(requireActivity()).get(SecretKeyViewModel.class);
 
@@ -141,8 +140,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
     public void onItemClick(int position) {
         ServerPc pc = serversList.get(position);
         Log.d("LOG", "connessione a: " + pc.getFullName());
-        homeViewModel.endSearch();
-        mouseViewModel.connect(pc);
+        Finder.endSearch();
+        MySocket.connect(new ServerPc(pc.getName(), pc.getIp())).observe(getViewLifecycleOwner(), this);
     }
 
     /**
@@ -183,17 +182,16 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
     @Override
     public void onChanged(Byte o) {
         if(o == MySocket.CONNECTED || o == MySocket.CONNECTED_PASSWORD) {
-
+            mouseViewModel.setPc(MySocket.getInstance().getPc());
             ((BottomNavigationView) requireActivity().findViewById(R.id.nav_view)).setSelectedItemId(R.id.mouse);
-
         }
         else if(o == MySocket.REQUIRE_PASSWORD){
-            LiveData<ServerPc> pc=homeViewModel.getPC(mouseViewModel.getPc().getName());
+            LiveData<ServerPc> pc=homeViewModel.getPC(MySocket.getInstance().getPc().getName());
             subscribeToServerPc(pc); //controllo se è presente nel db
         }
         else if(o == MySocket.WRONG_PASSWORD){
             Toast.makeText(requireActivity(), R.string.toast_wrong_password, Toast.LENGTH_SHORT).show();
-            requirePassword(mouseViewModel.getPc());
+            requirePassword(MySocket.getInstance().getPc());
         }
         else if(o == MySocket.CONNECTION_ERROR) { //CONNECTION_ERROR
             mouseViewModel.setPc(null);
@@ -225,7 +223,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
                     else{
                         decoded = android.util.Base64.decode(encryptedBase64, android.util.Base64.DEFAULT);
                     }
-                    mouseViewModel.usePassword(secretKeyViewModel.decrypt(decoded));
+                    MySocket.getInstance().usePassword(secretKeyViewModel.decrypt(decoded));
+
                 }
                 //se non è presente devo chiedere la password
                 else {
@@ -254,10 +253,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Serv
                 pc.setPassword(s);
                 if(mouseViewModel.getConnection()!=null
                         && mouseViewModel.getConnection().getValue()!=null
-                        &&
-                        (mouseViewModel.getConnection().getValue()==MySocket.REQUIRE_PASSWORD || mouseViewModel.getConnection().getValue()==MySocket.WRONG_PASSWORD))
-                    mouseViewModel.usePassword(s); //riprovo la connessione con la password
-
+                        && (mouseViewModel.getConnection().getValue()==MySocket.REQUIRE_PASSWORD || mouseViewModel.getConnection().getValue()==MySocket.WRONG_PASSWORD))
+                    MySocket.getInstance().usePassword(s); //riprovo la connessione con la password
             }
         });
         DialogFragment df = new PasswordDialog();
