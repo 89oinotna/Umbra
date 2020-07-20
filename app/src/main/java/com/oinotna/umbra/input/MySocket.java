@@ -25,6 +25,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -260,21 +261,25 @@ public class MySocket implements Runnable {
      * @param coord
      */
     public void push(byte action, float[] coord){
-        executor.execute(()->{
-            try {
-                if(ipAddress!=null) {
-                    Command cmd=new Command(mConnection.getValue(), action, coord);
-                    if(mConnection.getValue()==CONNECTED_PASSWORD){
-                        cmd.encrypt(k);
+        try {
+            executor.execute(() -> {
+                try {
+                    if (ipAddress != null) {
+                        Command cmd = new Command(mConnection.getValue(), action, coord);
+                        if (mConnection.getValue() == CONNECTED_PASSWORD) {
+                            cmd.encrypt(k);
+                        }
+                        byte[] s = cmd.command;
+                        DatagramPacket dp = new DatagramPacket(s, s.length, ipAddress, portPc);
+                        socketUdp.send(dp);
                     }
-                    byte[] s = cmd.command;
-                    DatagramPacket dp = new DatagramPacket(s, s.length, ipAddress, portPc);
-                    socketUdp.send(dp);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+            });
+        }catch (RejectedExecutionException e){
+            e.printStackTrace();
+        }
     }
 
     /**
