@@ -56,7 +56,7 @@ public class MySocketService extends Service {
     }
 
     /**
-     * Build the App notification when connected
+     * Build the notification for foreground
      * @return the builded notification
      */
     private Notification buildNotification(String pcName){

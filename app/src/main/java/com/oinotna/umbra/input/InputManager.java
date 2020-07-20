@@ -7,17 +7,31 @@ import com.oinotna.umbra.input.mouse.Mouse;
 
 public class InputManager {
 
+    /**
+     * Push a static action to server
+     * @see MySocket#push(byte)
+     */
     public static void push(byte action){
         if(MySocket.isConnected())
             MySocket.getInstance().push(action);
     }
 
+    /**
+     * Push a dynamic action to server
+     * @see MySocket#push(byte, float[])
+     */
     public static void push(byte action, float[] coord) {
         if(MySocket.isConnected())
             MySocket.getInstance().push(action, coord);
     }
 
     /*          MOUSE           */
+
+    /**
+     * Used to provide mouse movements
+     * @param type {@link Mouse.Type}
+     * @param event {@link MotionEvent} or {@link SensorEvent}
+     */
     public static boolean mouse(Mouse.Type type, Object event){
         switch (type){
             case LEFT:
@@ -41,6 +55,11 @@ public class InputManager {
         return true;
     }
 
+    /**
+     * Sets sensitivity for the mouse
+     * @param type {@link Mouse.Type}
+     * @param value
+     */
     public static void setMouseSensitivity(Mouse.Type type, int value){
         switch (type){
             case PAD:
@@ -55,6 +74,9 @@ public class InputManager {
         }
     }
 
+    /**
+     * Reset mouse sensor values
+     */
     public static void resetSensor(){
         Mouse.getInstance().resetSensor();
     }

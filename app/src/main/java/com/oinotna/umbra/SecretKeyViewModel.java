@@ -26,6 +26,11 @@ public class SecretKeyViewModel extends ViewModel {
         this.key=key;
     }
 
+    /**
+     * Encrypt password to get stored in db
+     * @param encoded
+     * @return Base64 encrypted password
+     */
     public String encrypt(byte[] encoded) {
         Cipher cipher = null;
         try {
@@ -34,10 +39,8 @@ public class SecretKeyViewModel extends ViewModel {
             cipher.init(Cipher.ENCRYPT_MODE, key, ivSpec);
             byte[] ciphertext = cipher.doFinal(encoded);
             //byte[] iv = cipher.getIV();
-            //todo base64
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 return new String(Base64.getEncoder().encode(ciphertext));
-                //todo use sha
             }
             else{
                 return new String(android.util.Base64.encode(ciphertext, android.util.Base64.DEFAULT));
@@ -49,6 +52,11 @@ public class SecretKeyViewModel extends ViewModel {
         return null;
     }
 
+    /**
+     * Decrypt stored password from db
+     * @param encrypted
+     * @return Base64 decrypted key
+     */
     public String decrypt(byte[] encrypted) {
         Cipher cipher = null;
         try {

@@ -15,6 +15,9 @@ public class MyInterruptThread extends Thread {
         this.socket = target.getSocket();
     }
 
+    /**
+     * Interrupt the current thread and close it's socket
+     */
     @Override
     public void interrupt(){
         super.interrupt();

@@ -40,6 +40,10 @@ public class MouseViewModel extends ViewModel{
 
     /*          SENSOR          */
 
+    /**
+     * Set using sensor value
+     * @param sensor
+     */
     public void setSensor(boolean sensor) {
         this.usingSensor=sensor;
     }

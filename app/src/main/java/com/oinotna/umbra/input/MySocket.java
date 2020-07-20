@@ -76,6 +76,10 @@ public class MySocket implements Runnable {
         return instance;
     }
 
+    /**
+     * Returns the current LiveData used to notify connection changes
+     * @return
+     */
     public MutableLiveData<Byte> getConnection() {
         if(mConnection==null)
             mConnection= new MutableLiveData<>();
@@ -86,6 +90,10 @@ public class MySocket implements Runnable {
         void onDisconnect();
     }
 
+    /**
+     * Used to add listener that will be called on disconnection
+     * @param listener
+     */
     public void setOnDisconnectListener(OnDisconnectListener listener) {
         mListener=listener;
     }
@@ -166,6 +174,10 @@ public class MySocket implements Runnable {
         mThread.start();
     }
 
+    /**
+     * @return true if connection is CONNECTED || CONNECTED_PASSWORD
+     *          false otherwise
+     */
     public static boolean isConnected() {
         if(instance==null) return false;
         LiveData<Byte> mConnection=instance.getConnection();
@@ -177,6 +189,12 @@ public class MySocket implements Runnable {
         return  pc;
     }
 
+    /**
+     * Connect to a server
+     * If already connected disconnects from previous server
+     * @param pc ServerPc to connect to
+     * @return LiveData used to notify connection changes for this instance
+     */
     public static LiveData<Byte> connect(ServerPc pc) {
         if(instance!=null)
             instance.disconnect();
@@ -332,7 +350,6 @@ public class MySocket implements Runnable {
                     mListener = null;
                 }
                 mConnection.postValue(DISCONNECTED);
-
             }
         }catch (IOException e){
             e.printStackTrace();
