@@ -52,7 +52,7 @@ public class MySocketService extends Service {
             stopSelf();
             started=false;*/
         }
-        return START_NOT_STICKY;
+        return START_STICKY;
     }
 
     /**

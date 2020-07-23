@@ -4,7 +4,6 @@ import android.hardware.SensorEvent;
 import android.view.MotionEvent;
 
 import com.oinotna.umbra.input.InputManager;
-import com.oinotna.umbra.input.MySocket;
 
 public class Mouse implements MouseControl {
 
@@ -165,6 +164,7 @@ public class Mouse implements MouseControl {
         */
         final float x=event.values[2];
         final float y=event.values[0];
+        //Log.d("SENSOR", x+" , "+y);
         if(lastSensor[0]==-1 || lastSensor[0]==0){
             lastSensor[0]=x;
             lastSensor[1]=y;
