@@ -34,8 +34,14 @@ public class MouseViewModel extends ViewModel{
         super.onCleared();
     }
 
+    /**
+     * Returns the current connection used by the socket if any
+     * @return connection (can be null if no socket)
+     */
     public LiveData<Byte> getConnection() {
-        return MySocket.getInstance().getConnection();
+        if(MySocket.getInstance()!=null)
+            return MySocket.getInstance().getConnection();
+        return null;
     }
 
     /*          SENSOR          */

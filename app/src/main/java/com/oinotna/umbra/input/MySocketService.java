@@ -83,6 +83,7 @@ public class MySocketService extends Service {
                 .setStyle(new NotificationCompat.BigTextStyle()
                         .bigText(getString(R.string.notification_connected_to)+pcName))
                 .setContentIntent(pendingIntent)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .addAction(R.drawable.ic_menu_mouse_full, getString(R.string.notification_button_disconnect), disconnectPendingIntent)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 

@@ -72,6 +72,10 @@ public class MySocket implements Runnable {
     private static MySocket instance;
 
 
+    /**
+     * Returns the instance
+     * @return can be null
+     */
     public static MySocket getInstance() {
         return instance;
     }

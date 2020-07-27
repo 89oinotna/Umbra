@@ -57,6 +57,7 @@ class MainActivity : AppCompatActivity() {
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel("com.oinotna.umbra.NOTIFICATION", name, importance).apply {
                 description = descriptionText
+                lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
             }
             // Register the channel with the system
             val notificationManager: NotificationManager =

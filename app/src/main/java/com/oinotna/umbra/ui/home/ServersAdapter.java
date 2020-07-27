@@ -39,7 +39,6 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ServerVi
         this.mListenerMenu=mListenerMenu;
     }
 
-
     public class ServerViewHolder extends RecyclerView.ViewHolder implements  View.OnClickListener, View.OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener {
         private TextView name;
         private CardView cv;
