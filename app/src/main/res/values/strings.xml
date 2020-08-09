@@ -13,7 +13,7 @@
 
     <!-- Preference Titles -->
     <string name="mouse_header">Mouse Settings</string>
-
+    <string name="about">About</string>
     <string name="password">Password</string>
 
     <!-- Toast -->

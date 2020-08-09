@@ -11,7 +11,7 @@
             app:defaultValue="50"
             app:min="1"
             app:showSeekBarValue="true"
-            android:summary="mouse sensitivity">
+            android:title="Mouse sensitivity">
 
         </SeekBarPreference>
         <SeekBarPreference
@@ -21,7 +21,7 @@
             app:min="1"
             app:defaultValue="50"
             app:showSeekBarValue="true"
-            android:summary="wheel sensitivity"/>
+            android:title="Wheel sensitivity"/>
         <SeekBarPreference
             app:key="sensor_sensitivity"
             android:id="@+id/sensor_sensitivity"
@@ -29,14 +29,27 @@
             app:min="1"
             app:defaultValue="50"
             app:showSeekBarValue="true"
-            android:summary="sensor sensitivity"/>
+            android:title="Sensor sensitivity"/>
         <SwitchPreference
             android:id="@+id/use_sensor"
             android:defaultValue="false"
-            android:summary="use sensor"
+            android:title="Use sensor"
             app:key="use_sensor" />
 
 
+
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/about">
+
+
+        <Preference
+            android:id="@+id/download"
+            android:key="download"
+            android:summary="Download server from https://github.com/89oinotna/UmbraServer">
+
+        </Preference>
     </PreferenceCategory>
 
 
