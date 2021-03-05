@@ -12,6 +12,11 @@
         android:title="@string/title_mouse" />
 
     <item
+        android:id="@+id/keyboard"
+        android:icon="@drawable/ic_menu_keyboard_full"
+        android:title="@string/title_keyboard" />
+
+    <item
         android:id="@+id/settings"
         android:icon="@drawable/ic_menu_settings_full"
         android:title="@string/title_settings" />

@@ -26,10 +26,10 @@ public class CircularAnimatedDrawable extends Drawable implements Animatable {
     private static final Float MIN_SWEEP_ANGLE = 30f;
 
     private final RectF fBounds = new RectF();
-    private Paint mPaint;
-    private View mAnimatedView;
+    private final Paint mPaint;
+    private final View mAnimatedView;
 
-    private float mBorderWidth;
+    private final float mBorderWidth;
     private float mCurrentGlobalAngle;
     private float mCurrentSweepAngle;
 

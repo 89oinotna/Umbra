@@ -1,15 +1,11 @@
 package com.oinotna.umbra.input;
 
-import android.app.Application;
-import android.app.Service;
-import android.content.Intent;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.oinotna.umbra.db.ServerPc;
-import com.oinotna.umbra.input.mouse.Mouse;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,20 +15,14 @@ import java.net.DatagramSocket;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class MySocket implements Runnable {
@@ -71,6 +61,40 @@ public class MySocket implements Runnable {
 
     private static MySocket instance;
 
+    private class ConnectionCommand extends Command{
+        private String password;
+
+        public ConnectionCommand(String password){
+            super((byte) 0x0);
+            this.password=password;
+        }
+
+        public ConnectionCommand(){
+            super((byte) 0x0);
+        }
+        @Override
+        public byte[] getCommandBytes() {
+            ByteBuffer command;
+            if(password!=null) {
+                String c = ":" + password;
+                command = ByteBuffer.allocate(1 + c.length());
+                command.put((byte) 0x0);
+                command.put(c.getBytes(), 1, c.length());
+                return command.array();
+            }
+            else{
+                return new byte[]{0x0};
+            }
+            //byte[] cb=c.getBytes();
+            /*command=new byte[2 + cb.length];
+            command[0]=CONNECTION_PASSWORD;
+            command[1]= Mouse.NULL;*/
+            //System.arraycopy(cb, 0, command, 2, cb.length);
+            //getEncryptedBytes(k);
+
+        }
+    }
+
 
     /**
      * Returns the instance
@@ -102,73 +126,7 @@ public class MySocket implements Runnable {
         mListener=listener;
     }
 
-    private class Command{
-        //todo command abstract con encrypt e poi implementazioni per ogni componente (mouse ecc)
-        private byte[] command;
 
-        /**
-         * Principale per invio comandi (Mouse)
-         * @param connectionType
-         * @param action
-         * @param coord
-         */
-        public Command(byte connectionType, byte action, float[] coord){
-            if(coord!=null){
-                String c=":"+(int)coord[0]+","+(int)coord[1];
-                byte[] cb=c.getBytes();
-                command=new byte[2 + cb.length];
-                command[0]=connectionType;
-                command[1]=action;
-                System.arraycopy(cb, 0, command, 2, cb.length);
-            }
-            else{
-                command=new byte[]{connectionType, action};
-            }
-        }
-
-        /**
-         * Per la connessione
-         * Metto la password in base64 e la cripto
-         * @param k può essere null se non uso la password
-         */
-        public Command(String password, SecretKey k){
-            if(k!=null){
-                String c=":"+password;
-                byte[] cb=c.getBytes();
-                command=new byte[2 + cb.length];
-                command[0]=CONNECTION_PASSWORD;
-                command[1]= Mouse.NULL;
-                System.arraycopy(cb, 0, command, 2, cb.length);
-                encrypt(k);
-            }
-            else{
-                command=new byte[]{CONNECTION, Mouse.NULL};
-            }
-        }
-
-        /**
-         * Encrypt with key
-         * @param k
-         */
-        public void encrypt(SecretKey k){
-            //todo aggiungere timestamp per evitare replay
-            try {
-                Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-                //todo store iv safely in sharedprefs instead of hardcoded
-                IvParameterSpec ivSpec = new IvParameterSpec("1111111111111111".getBytes());
-                cipher.init(Cipher.ENCRYPT_MODE, k, ivSpec);
-                byte[] tmp=new byte[command.length-1];
-                System.arraycopy(command, 1, tmp, 0, tmp.length);
-                tmp = cipher.doFinal(tmp);
-                byte[] finalCom= new byte[1+tmp.length];
-                System.arraycopy(command, 0, finalCom, 0, 1);
-                System.arraycopy(tmp, 0, finalCom, 1, tmp.length);
-                command=finalCom;
-            } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException | InvalidAlgorithmParameterException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
 
     public MySocket(ServerPc pc) {
@@ -222,7 +180,7 @@ public class MySocket implements Runnable {
                     this.k= decodeKeyFromBase64(pc.getPassword());
                 }
                 //genero il comando per la connessione
-                byte[] s = new Command(pc.getPassword(), k).command;
+                byte[] s = new ConnectionCommand(pc.getPassword()).getEncryptedBytes(k);
                 writer.write(s);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -273,23 +231,23 @@ public class MySocket implements Runnable {
      * Send static action (button press)
      * @param action
      */
-    public void push(byte action){
+    /*public void push(byte type, int action){
         push(action, null);
-    }
+    }*/
 
     /**
      * Send movement action (pad, sensor, wheel)
      * @param action
      * @param coord
      */
-    public void push(byte action, float[] coord){
+    /*public void push(byte type, int action, float[] coord){
         try {
             executor.execute(() -> {
                 try {
                     if (ipAddress != null) {
                         Command cmd = new Command(mConnection.getValue(), action, coord);
                         if (mConnection.getValue() == CONNECTED_PASSWORD) {
-                            cmd.encrypt(k);
+                            cmd.getEncryptedBytes(k);
                         }
                         byte[] s = cmd.command;
                         DatagramPacket dp = new DatagramPacket(s, s.length, ipAddress, portPc);
@@ -302,7 +260,46 @@ public class MySocket implements Runnable {
         }catch (RejectedExecutionException e){
             e.printStackTrace();
         }
+    }*/
+
+    public void push(Command cmd){
+        try {
+            executor.execute(() -> {
+                try {
+                    if (ipAddress != null) {
+                        //todo add connection type
+                        //Command cmd = new Command(mConnection.getValue(), action, coord);
+                        byte[] s;
+                        if (mConnection.getValue() == CONNECTED_PASSWORD) {
+                            s=cmd.getEncryptedBytes(k);
+                        }
+                        else{
+                            s=cmd.getCommandBytes();
+                        }
+                        s=prefixWithConnection(s);
+                        DatagramPacket dp = new DatagramPacket(s, s.length, ipAddress, portPc);
+                        socketUdp.send(dp);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        }catch (RejectedExecutionException e){
+            e.printStackTrace();
+        }
     }
+
+    public byte[] prefixWithConnection(byte[] toPrefix){
+        return prefixWith(toPrefix, mConnection.getValue());
+    }
+
+    public byte[] prefixWith(byte[] toPrefix, byte prefix){
+        byte[] tmp=new byte[toPrefix.length+1];
+        System.arraycopy(toPrefix, 0, tmp, 1, toPrefix.length);
+        tmp[0]=prefix;
+        return tmp;
+    }
+
 
     /**
      * Prova la connessione e poi entra in un ciclo bloccante sulla read
@@ -322,8 +319,19 @@ public class MySocket implements Runnable {
                 if(pc.getPassword()!=null){
                     this.k= decodeKeyFromBase64(pc.getPassword());
                 }
+                else{
+
+                }
                 //genero il comando per la connessione
-                byte[] s = new Command(pc.getPassword(), k).command;
+                byte[] s;
+                if(k!=null) {
+                    s = new ConnectionCommand(pc.getPassword()).getEncryptedBytes(k);
+                    s=prefixWith(s, CONNECTION_PASSWORD);
+                }
+                else {
+                    s = new ConnectionCommand().getCommandBytes();
+                    s=prefixWith(s, CONNECTION);
+                }
                 writer.write(s);
                 int readBytes;
                 while(!Thread.interrupted() && (readBytes=reader.read(rb)) > -1) {

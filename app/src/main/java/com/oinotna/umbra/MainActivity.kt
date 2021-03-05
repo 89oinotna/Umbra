@@ -18,13 +18,15 @@ package com.oinotna.umbra
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
 import android.util.Base64
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -33,6 +35,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.oinotna.umbra.input.MySocket
 import java.io.IOException
 import java.security.GeneralSecurityException
 import javax.crypto.KeyGenerator
@@ -47,6 +50,8 @@ class MainActivity : AppCompatActivity() {
     private var currentNavController: LiveData<NavController>? = null
 
     private lateinit var secretKeyViewModel: SecretKeyViewModel
+
+    private lateinit var br: BroadcastReceiver
 
     private fun createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
@@ -75,6 +80,31 @@ class MainActivity : AppCompatActivity() {
         secretKeyViewModel=ViewModelProvider(this).get(SecretKeyViewModel::class.java)
         secretKeyViewModel.aesKey=getAESKey()
         createNotificationChannel()
+        setBroadcastReceiver()
+    }
+
+    /**
+     * Set MyBroadcastReceiver that wait for the notification broadcast
+     * Disconnect when broadcast is received
+     */
+    private fun setBroadcastReceiver() {
+        br = MyBroadcastReceiver { intent: Intent? ->
+            //todo controllare intent
+            if (intent != null && MyBroadcastReceiver.ACTION_DISCONNECT == intent.action) {
+                MySocket.getInstance()?.disconnect()
+            }
+        }
+
+        //registro l'intent filter
+        val filter = IntentFilter(MyBroadcastReceiver.ACTION_DISCONNECT)
+
+        //registro il broadcast receiver
+        /* From doc:   Context-registered receivers receive broadcasts as long as their registering
+                        context is valid. For an example, if you register within an Activity context,
+                        you receive broadcasts as long as the activity is not destroyed. If you register
+                        with the Application context, you receive broadcasts as long as the app is running.*/
+        applicationContext.registerReceiver(br, filter)
+
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -91,19 +121,19 @@ class MainActivity : AppCompatActivity() {
     private fun setupBottomNavigationBar() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.nav_view)
 
-        val navGraphIds = listOf(R.navigation.home, R.navigation.mouse, R.navigation.settings)
+        val navGraphIds = listOf(R.navigation.home, R.navigation.mouse, R.navigation.keyboard, R.navigation.settings)
 
         // Setup the bottom navigation view with a list of navigation graphs
         val controller = bottomNavigationView.setupWithNavController(
-            navGraphIds = navGraphIds,
-            fragmentManager = supportFragmentManager,
-            containerId = R.id.nav_host_container,
-            intent = intent
+                navGraphIds = navGraphIds,
+                fragmentManager = supportFragmentManager,
+                containerId = R.id.nav_host_container,
+                intent = intent
         )
 
         // Whenever the selected controller changes, setup the action bar.
         controller.observe(this, Observer { navController ->
-             setupActionBarWithNavController(navController)
+            setupActionBarWithNavController(navController)
         })
         currentNavController = controller
     }
@@ -117,10 +147,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * retrieve the aes key used for encrypt/decrypt stored password
+     * retrieve the aes key used for getEncryptedBytes/decrypt stored password
      * @return
      */
-    fun getAESKey(): SecretKey? {
+    private fun getAESKey(): SecretKey? {
         //TODO store da qualche parte
         return try {
             val mk = MasterKey.Builder(application).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()

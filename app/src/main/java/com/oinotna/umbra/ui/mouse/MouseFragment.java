@@ -1,8 +1,6 @@
 package com.oinotna.umbra.ui.mouse;
 
 import android.annotation.SuppressLint;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -13,7 +11,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -34,13 +31,14 @@ import com.oinotna.umbra.input.InputManager;
 import com.oinotna.umbra.input.MySocket;
 import com.oinotna.umbra.input.MySocketService;
 import com.oinotna.umbra.input.mouse.Mouse;
+import com.oinotna.umbra.input.MySocketViewModel;
 
 import java.util.Objects;
 
 public class MouseFragment extends Fragment implements SensorEventListener, View.OnTouchListener, Observer<Byte> {
 
     private MouseViewModel mouseViewModel;
-
+    private MySocketViewModel mySocketViewModel;
     private Button btnMouseLeft;
     private Button btnMouseRight;
     private Button btnMouseWheel;
@@ -55,12 +53,12 @@ public class MouseFragment extends Fragment implements SensorEventListener, View
 
         View root = inflater.inflate(R.layout.fragment_mouse, container, false);
         mouseViewModel = new ViewModelProvider(requireActivity()).get(MouseViewModel.class);
-
+        mySocketViewModel=new ViewModelProvider(requireActivity()).get(MySocketViewModel.class);
         btnMouseLeft = root.findViewById(R.id.btn_mouse_left);
         btnMouseRight = root.findViewById(R.id.btn_mouse_right);
         btnMouseWheel = root.findViewById(R.id.btn_mouse_wheel);
         btnMousePad = root.findViewById(R.id.btn_mouse_pad);
-        Log.d("DISCONNECT", ""+MySocket.isConnected());
+        //Log.d("DISCONNECT", ""+MySocket.isConnected());
         if(MySocket.isConnected()){
             sm = (SensorManager) requireActivity().getSystemService(Context.SENSOR_SERVICE);
 
@@ -68,12 +66,12 @@ public class MouseFragment extends Fragment implements SensorEventListener, View
             btnMouseRight.setOnTouchListener(this);
             btnMouseWheel.setOnTouchListener(this);
             btnMousePad.setOnTouchListener(this);
-            setBroadcastReceiver();
+            //setBroadcastReceiver();
             requireActivity().startService(new Intent(requireActivity().getApplicationContext(), MySocketService.class)
                     .setAction(MySocketService.START_SERVICE)
-                    .putExtra("pcName", mouseViewModel.getPc().getFullName()));
+                    .putExtra("pcName", mySocketViewModel.getPc().getFullName()));
 
-            mouseViewModel.getConnection().observe(getViewLifecycleOwner(), this);
+            mySocketViewModel.getConnection().observe(getViewLifecycleOwner(), this);
         }
 
         return root;
@@ -88,7 +86,8 @@ public class MouseFragment extends Fragment implements SensorEventListener, View
             br = new MyBroadcastReceiver(intent -> {
                 //todo controllare intent
                 if (intent != null && MyBroadcastReceiver.ACTION_DISCONNECT.equals(intent.getAction())) {
-                    MySocket.getInstance().disconnect();
+                    if(MySocket.getInstance()!=null)
+                        MySocket.getInstance().disconnect();
                 }
             });
 
@@ -113,16 +112,16 @@ public class MouseFragment extends Fragment implements SensorEventListener, View
         v.performClick();
         switch (v.getId()){
             case R.id.btn_mouse_left:
-                InputManager.mouse(Mouse.Type.LEFT, e);
+                mouseViewModel.mouse(Mouse.Type.LEFT, e);
                 break;
             case R.id.btn_mouse_right:
-                InputManager.mouse(Mouse.Type.RIGHT, e);
+                mouseViewModel.mouse(Mouse.Type.RIGHT, e);
                 break;
             case R.id.btn_mouse_wheel:
-                InputManager.mouse(Mouse.Type.WHEEL, e);
+                mouseViewModel.mouse(Mouse.Type.WHEEL, e);
                 break;
             case R.id.btn_mouse_pad:
-                InputManager.mouse(Mouse.Type.PAD, e);
+                mouseViewModel.mouse(Mouse.Type.PAD, e);
                 break;
             default:
                 return false;
@@ -143,7 +142,7 @@ public class MouseFragment extends Fragment implements SensorEventListener, View
         super.onResume();
         if(MySocket.isConnected()) {
             ActionBar ab = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-            Objects.requireNonNull(ab).setTitle(mouseViewModel.getPc().getName().trim());
+            Objects.requireNonNull(ab).setTitle(mySocketViewModel.getPc().getName().trim());
 
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireActivity());
             InputManager.setMouseSensitivity(Mouse.Type.PAD, prefs.getInt("mouse_sensitivity", 50));
@@ -163,7 +162,7 @@ public class MouseFragment extends Fragment implements SensorEventListener, View
     @Override
     public void onSensorChanged(SensorEvent event) {
         //Log.d(event.sensor.getName(), event.values[0]+", "+event.values[1]+", "+event.values[2]);
-        InputManager.mouse(Mouse.Type.SENSOR, event);
+        mouseViewModel.mouse(Mouse.Type.SENSOR, event);
     }
 
     @Override
@@ -179,7 +178,7 @@ public class MouseFragment extends Fragment implements SensorEventListener, View
     @Override
     public void onChanged(Byte aByte) {
         if(aByte == MySocket.DISCONNECTED){
-            mouseViewModel.getConnection().removeObserver(this);
+            mySocketViewModel.getConnection().removeObserver(this);
 
             btnMouseLeft.setOnTouchListener(null);
             btnMouseRight.setOnTouchListener(null);

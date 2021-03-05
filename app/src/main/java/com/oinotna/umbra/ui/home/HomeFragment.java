@@ -25,6 +25,7 @@ import com.oinotna.umbra.R;
 import com.oinotna.umbra.SecretKeyViewModel;
 import com.oinotna.umbra.db.ServerPc;
 import com.oinotna.umbra.input.MySocket;
+import com.oinotna.umbra.input.MySocketViewModel;
 import com.oinotna.umbra.thread.Finder;
 import com.oinotna.umbra.ui.mouse.MouseViewModel;
 
@@ -36,6 +37,7 @@ import java.util.Base64;
 public class HomeFragment extends Fragment implements  View.OnClickListener, ServersAdapter.onItemClickListner, Observer<Byte>, ServersAdapter.onMenuItemClickListener, ProgressButton.OnAnimationEndListener {
 
     private HomeViewModel homeViewModel;
+    private MySocketViewModel mySocketViewModel;
     private ServersAdapter mAdapter;
     private RecyclerView rv;
     private RecyclerView.LayoutManager lm;
@@ -60,6 +62,7 @@ public class HomeFragment extends Fragment implements  View.OnClickListener, Ser
         btnSearch.setOnAnimationEndListener(this);
 
         homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
+        mySocketViewModel=new ViewModelProvider(requireActivity()).get(MySocketViewModel.class);
 
         serversList = homeViewModel.getServersList();
 
@@ -183,7 +186,7 @@ public class HomeFragment extends Fragment implements  View.OnClickListener, Ser
     @Override
     public void onChanged(Byte o) {
         if(o == MySocket.CONNECTED || o == MySocket.CONNECTED_PASSWORD) {
-            mouseViewModel.setPc(MySocket.getInstance().getPc());
+            mySocketViewModel.setPc(MySocket.getInstance().getPc());
             ((BottomNavigationView) requireActivity().findViewById(R.id.nav_view)).setSelectedItemId(R.id.mouse);
         }
         else if(o == MySocket.REQUIRE_PASSWORD){
@@ -195,7 +198,7 @@ public class HomeFragment extends Fragment implements  View.OnClickListener, Ser
             requirePassword(MySocket.getInstance().getPc());
         }
         else if(o == MySocket.CONNECTION_ERROR) { //CONNECTION_ERROR
-            mouseViewModel.setPc(null);
+            mySocketViewModel.setPc(null);
             Toast.makeText(requireActivity(), R.string.toast_cant_connect, Toast.LENGTH_SHORT).show();
         }
     }
@@ -252,9 +255,9 @@ public class HomeFragment extends Fragment implements  View.OnClickListener, Ser
                 store.setPassword(secretKeyViewModel.encrypt(s.getBytes()));
                 homeViewModel.storePc(store); //salvo nel db
                 pc.setPassword(s);
-                if(mouseViewModel.getConnection()!=null
-                        && mouseViewModel.getConnection().getValue()!=null
-                        && (mouseViewModel.getConnection().getValue()==MySocket.REQUIRE_PASSWORD || mouseViewModel.getConnection().getValue()==MySocket.WRONG_PASSWORD))
+                if(mySocketViewModel.getConnection()!=null
+                        && mySocketViewModel.getConnection().getValue()!=null
+                        && (mySocketViewModel.getConnection().getValue()==MySocket.REQUIRE_PASSWORD || mySocketViewModel.getConnection().getValue()==MySocket.WRONG_PASSWORD))
                     MySocket.getInstance().usePassword(s); //riprovo la connessione con la password
             }
         });

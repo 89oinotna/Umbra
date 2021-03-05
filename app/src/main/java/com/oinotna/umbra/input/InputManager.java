@@ -5,62 +5,63 @@ import android.view.MotionEvent;
 
 import com.oinotna.umbra.input.mouse.Mouse;
 
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+
 public class InputManager {
+    public static byte KEYBOARD = 0x01;
+    public static byte MOUSE = 0x02;
 
     /**
      * Push a static action to server
-     * @see MySocket#push(byte)
+     * @see MySocket#
      */
-    public static void push(byte action){
+    /*public static void push(byte type, int action){
         if(MySocket.isConnected())
-            MySocket.getInstance().push(action);
+            MySocket.getInstance().push(type, action);
+    }*/
+
+    public static void push(Command cmd){
+        if(MySocket.isConnected())
+            MySocket.getInstance().push(cmd);
     }
 
     /**
      * Push a dynamic action to server
-     * @see MySocket#push(byte, float[])
+     * @see MySocket
      */
-    public static void push(byte action, float[] coord) {
+    /*public static void push(byte type, int action, float[] coord) {
         if(MySocket.isConnected())
-            MySocket.getInstance().push(action, coord);
-    }
+            MySocket.getInstance().push(type, action, coord);
+    }*/
+
+    /**
+     * Push a dynamic action to server
+     * @see MySocket
+     */
+    /*public static void push(byte type, int action, int val) {
+        if(MySocket.isConnected())
+            MySocket.getInstance().push(type, action, val);
+    }*/
 
     /*          MOUSE           */
 
-    /**
-     * Used to provide mouse movements
-     * @param type {@link Mouse.Type}
-     * @param event {@link MotionEvent} or {@link SensorEvent}
-     */
-    public static boolean mouse(Mouse.Type type, Object event){
-        switch (type){
-            case LEFT:
-                Mouse.getInstance().left((MotionEvent) event);
-                break;
-            case RIGHT:
-                Mouse.getInstance().right((MotionEvent)event);
-                break;
-            case PAD:
-                Mouse.getInstance().move((MotionEvent)event);
-                break;
-            case SENSOR:
-                Mouse.getInstance().move((SensorEvent)event);
-                break;
-            case WHEEL:
-                Mouse.getInstance().wheel((MotionEvent)event);
-                break;
-            default:
-                break;
-        }
-        return true;
-    }
+
 
     /**
      * Sets sensitivity for the mouse
      * @param type {@link Mouse.Type}
      * @param value
      */
-    public static void setMouseSensitivity(Mouse.Type type, int value){
+    /*public static void setMouseSensitivity(Mouse.Type type, int value){
         switch (type){
             case PAD:
                 Mouse.getInstance().setPadSensitivity(value);
@@ -72,13 +73,13 @@ public class InputManager {
                 Mouse.getInstance().setSensorSensitivity(value);
                 break;
         }
-    }
+    }*/
 
     /**
      * Reset mouse sensor values
      */
-    public static void resetSensor(){
+    /*public static void resetSensor(){
         Mouse.getInstance().resetSensor();
     }
-
+*/
 }
