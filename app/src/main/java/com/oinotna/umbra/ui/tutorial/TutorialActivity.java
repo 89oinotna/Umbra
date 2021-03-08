@@ -20,7 +20,7 @@ import com.oinotna.umbra.MainActivity;
 import com.oinotna.umbra.R;
 
 public class TutorialActivity extends AppCompatActivity {
-    public static final int PAGES_NUM=2;
+    public static final int PAGES_NUM=3;
     private TutorialAdapter mAdapter;
     private ViewPager2 mViewPager;
     private Button btnNext;
@@ -42,9 +42,11 @@ public class TutorialActivity extends AppCompatActivity {
         public Fragment createFragment(int position) {
             switch(position){
                 case 0:
-                    return new FirstTutorialFragment();
+                    return FirstTutorialFragment.newInstance();
                 case 1:
-                    return new SecondTutorialFragment();
+                    return SecondTutorialFragment.newInstance();
+                case 2:
+                    return ThirdTutorialFragment.newInstance();
             }
             return null;
         }
