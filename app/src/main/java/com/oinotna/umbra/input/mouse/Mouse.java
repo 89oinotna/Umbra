@@ -35,10 +35,10 @@ public class Mouse implements MouseControl {
 
                 String c=":"+(int)coord[0]+","+(int)coord[1];
                 byte[] cb=c.getBytes();
-                command = ByteBuffer.allocate(1+4 + c.length());
+                command = ByteBuffer.allocate(1+4 + cb.length);
                 command.put(this.getType());
                 command.putInt(action);
-                command.put(cb, 5, cb.length);
+                command.put(cb);
 
             }
             else{
@@ -52,17 +52,17 @@ public class Mouse implements MouseControl {
 
     //action type
     public static byte NULL=0x00;
-    public static byte LEFT_DOWN=0x01;
-    public static byte LEFT_UP=0x02;
-    public static byte RIGHT_DOWN=0x03;
+    public static final byte LEFT_DOWN=0x01;
+    public static final byte LEFT_UP=0x02;
+    public static final byte RIGHT_DOWN=0x03;
     public static byte RIGHT_UP=0x04;
-    public static byte WHEEL_MOVE=0x05;
-    public static byte PAD_MOVE=0x06;
-    public static byte SENSOR_MOVE=0x07;
+    public static final byte WHEEL_MOVE=0x05;
+    public static final byte PAD_MOVE=0x06;
+    public static final byte SENSOR_MOVE=0x07;
 
-    private float[] lastWheel;
-    private float[] lastPad;
-    private float[] lastSensor;
+    private final float[] lastWheel;
+    private final float[] lastPad;
+    private final float[] lastSensor;
 
     private float wheelSensitivity;
     private float padSensitivity;
@@ -133,7 +133,7 @@ public class Mouse implements MouseControl {
                 InputManager.push(new MouseCommand(RIGHT_DOWN));
                 break;
             case MotionEvent.ACTION_UP:
-                InputManager.push(new MouseCommand(RIGHT_DOWN));
+                InputManager.push(new MouseCommand(RIGHT_UP));
                 break;
             default:
                 return false;

@@ -15,19 +15,19 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class Finder implements RunnableWithSocket {
-    private int portPc=4513;
-    private int portFinder=4513;
+    private final int portPc=4513;
+    private final int portFinder=4513;
 
     //private InetAddress broadcast;
-    private DatagramSocket socket;
+    private final DatagramSocket socket;
 
-    private static byte BROADCAST=0x00;
-    private static byte ALIVE=0x01;
+    private static final byte BROADCAST=0x00;
+    private static final byte ALIVE=0x01;
 
     private List<ServerPc> serversList;
     private MutableLiveData<Boolean> serversLiveData;
 
-    private Executor executor;
+    private final Executor executor;
 
     private static Finder instance;
     private static MyInterruptThread mThread;

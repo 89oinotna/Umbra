@@ -17,7 +17,7 @@
                 android:layout_weight="1"
                 android:insetLeft="2dp"
                 android:insetRight="2dp"
-                android:text="\" />
+                android:text="@string/slash" />
 
             <Button
                 android:id="@+id/btn_1"
@@ -449,7 +449,7 @@
                 android:layout_weight="1"
                 android:insetLeft="2dp"
                 android:insetRight="2dp"
-                android:text="<"
+                android:text="@string/oem_102"
                 android:textStyle="bold" />
 
             <Button
@@ -498,6 +498,15 @@
                 android:text="B" />
 
             <Button
+                android:id="@+id/btn_key_n"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:insetLeft="2dp"
+                android:insetRight="2dp"
+                android:text="N" />
+
+            <Button
                 android:id="@+id/btn_key_m"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -506,14 +515,7 @@
                 android:insetRight="2dp"
                 android:text="M" />
 
-            <Button
-                android:id="@+id/btn_key_n"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:insetLeft="2dp"
-                android:insetRight="2dp"
-                android:text="N" />
+
 
             <Button
                 android:id="@+id/btn_oem_comma"

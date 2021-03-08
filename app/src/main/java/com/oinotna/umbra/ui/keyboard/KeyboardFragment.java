@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -37,6 +38,8 @@ public class KeyboardFragment extends Fragment implements Observer<Byte> {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+        getActivity().setRequestedOrientation(
+                ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         mViewModel = new ViewModelProvider(requireActivity()).get(KeyboardViewModel.class);
         mySocketViewModel=new ViewModelProvider(requireActivity()).get(MySocketViewModel.class);
         if(MySocket.isConnected()){
@@ -47,6 +50,13 @@ public class KeyboardFragment extends Fragment implements Observer<Byte> {
             mySocketViewModel.getConnection().observe(getViewLifecycleOwner(), this);
         }
         return inflater.inflate(R.layout.fragment_keyboard, container, false);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        getActivity().setRequestedOrientation(
+                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
 
 

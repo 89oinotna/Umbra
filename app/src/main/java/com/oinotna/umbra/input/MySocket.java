@@ -16,7 +16,6 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,30 +27,30 @@ import javax.crypto.spec.SecretKeySpec;
 public class MySocket implements Runnable {
     //todo header object
 
-    private ServerPc pc;
+    private final ServerPc pc;
 
     private SecretKey k;
 
     private MutableLiveData<Byte> mConnection;
-    private ExecutorService executor;
+    private final ExecutorService executor;
     private InetAddress ipAddress;
 
-    private int portPc=4513; //UDP mouse
-    private int portConnectionPc=4512; //TCP connection
+    private final int portPc=4513; //UDP mouse
+    private final int portConnectionPc=4512; //TCP connection
 
     //connection request
-    public static byte CONNECTION=0x04;
-    public static byte CONNECTION_PASSWORD=0x05;
+    public static final byte CONNECTION=0x04;
+    public static final byte CONNECTION_PASSWORD=0x05;
 
     //Connection status
-    public static byte CONNECTED=0x01;
-    public static byte DISCONNECTED=0x02;
-    public static byte CONNECTED_PASSWORD=0x03;
+    public static final byte CONNECTED=0x01;
+    public static final byte DISCONNECTED=0x02;
+    public static final byte CONNECTED_PASSWORD=0x03;
 
     //response
-    public static byte CONNECTION_ERROR=0x04;
-    public static byte REQUIRE_PASSWORD=0x05;
-    public static byte WRONG_PASSWORD=0x06;
+    public static final byte CONNECTION_ERROR=0x04;
+    public static final byte REQUIRE_PASSWORD=0x05;
+    public static final byte WRONG_PASSWORD=0x06;
 
     private DatagramSocket socketUdp;
     private Socket socketTcp;
@@ -61,7 +60,7 @@ public class MySocket implements Runnable {
 
     private static MySocket instance;
 
-    private class ConnectionCommand extends Command{
+    private static class ConnectionCommand extends Command{
         private String password;
 
         public ConnectionCommand(String password){
@@ -79,7 +78,7 @@ public class MySocket implements Runnable {
                 String c = ":" + password;
                 command = ByteBuffer.allocate(1 + c.length());
                 command.put((byte) 0x0);
-                command.put(c.getBytes(), 1, c.length());
+                command.put(c.getBytes(), 0, c.length());
                 return command.array();
             }
             else{
@@ -181,6 +180,7 @@ public class MySocket implements Runnable {
                 }
                 //genero il comando per la connessione
                 byte[] s = new ConnectionCommand(pc.getPassword()).getEncryptedBytes(k);
+                s=prefixWith(s, CONNECTION_PASSWORD);
                 writer.write(s);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -318,9 +318,6 @@ public class MySocket implements Runnable {
 
                 if(pc.getPassword()!=null){
                     this.k= decodeKeyFromBase64(pc.getPassword());
-                }
-                else{
-
                 }
                 //genero il comando per la connessione
                 byte[] s;

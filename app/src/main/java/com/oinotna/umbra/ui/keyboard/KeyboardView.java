@@ -13,17 +13,17 @@ import com.oinotna.umbra.R;
 import com.oinotna.umbra.input.keyboard.Keyboard;
 import com.oinotna.umbra.input.keyboard.Keys;
 
-public class Keyboard_View extends LinearLayout implements View.OnTouchListener {
+public class KeyboardView extends LinearLayout implements View.OnTouchListener {
     // constructors
-    public Keyboard_View(Context context) {
+    public KeyboardView(Context context) {
         this(context, null, 0);
     }
 
-    public Keyboard_View(Context context, AttributeSet attrs) {
+    public KeyboardView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public Keyboard_View(Context context, AttributeSet attrs, int defStyleAttr) {
+    public KeyboardView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context, attrs);
     }
@@ -94,7 +94,7 @@ public class Keyboard_View extends LinearLayout implements View.OnTouchListener 
 
     // This will map the button resource id to the String value that we want to
     // input when that button is clicked.
-    SparseIntArray keyValues = new SparseIntArray();
+    final SparseIntArray keyValues = new SparseIntArray();
 
     private void init(Context context, AttributeSet attrs) {
 
@@ -228,6 +228,7 @@ public class Keyboard_View extends LinearLayout implements View.OnTouchListener 
         btn_apps.setOnTouchListener(this);
         btn_rcontrol.setOnTouchListener(this);
 
+
         // map buttons IDs to input strings
         keyValues.put(R.id.btn_oem_5, Keys.OEM_5);
         keyValues.put(R.id.btn_1, Keys.KEY_1 );
@@ -291,6 +292,8 @@ public class Keyboard_View extends LinearLayout implements View.OnTouchListener 
         keyValues.put(R.id.btn_boh, Keys.NONAME );
         keyValues.put(R.id.btn_apps, Keys.APPS );
         keyValues.put(R.id.btn_rcontrol, Keys.RCONTROL );
+
+
     }
 
 
@@ -300,9 +303,12 @@ public class Keyboard_View extends LinearLayout implements View.OnTouchListener 
          switch (event.getAction()){
              case MotionEvent.ACTION_DOWN:
                  Keyboard.sendKeyDown(keyValues.get(v.getId()));
+                 break;
              case MotionEvent.ACTION_UP:
                  Keyboard.sendKeyUp(keyValues.get(v.getId()));
+                 break;
          }
-         return  true;
+         v.performClick();
+         return false;
     }
 }

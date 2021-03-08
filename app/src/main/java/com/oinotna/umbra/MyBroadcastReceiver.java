@@ -5,8 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 
 public class MyBroadcastReceiver extends BroadcastReceiver {
-    public static String ACTION_DISCONNECT = "com.oinotna.umbra.action.DISCONNECT";
-    private OnReceiveListener mListener;
+    public static final String ACTION_DISCONNECT = "com.oinotna.umbra.action.DISCONNECT";
+    private final OnReceiveListener mListener;
 
     public interface OnReceiveListener{
         void onReceive(Intent intent);

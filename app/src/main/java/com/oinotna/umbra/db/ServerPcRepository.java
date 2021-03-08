@@ -6,7 +6,7 @@ import androidx.lifecycle.LiveData;
 
 public class ServerPcRepository {
 
-    private ServerPcDao mServerPcDao;
+    private final ServerPcDao mServerPcDao;
 
     public ServerPcRepository(Application application){
         ServerPcDatabase db = ServerPcDatabase.getDatabase(application);
@@ -18,8 +18,6 @@ public class ServerPcRepository {
     }
 
     public void insert(ServerPc pc) {
-        ServerPcDatabase.databaseWriteExecutor.execute(() -> {
-            mServerPcDao.insert(pc);
-        });
+        ServerPcDatabase.databaseWriteExecutor.execute(() -> mServerPcDao.insert(pc));
     }
 }

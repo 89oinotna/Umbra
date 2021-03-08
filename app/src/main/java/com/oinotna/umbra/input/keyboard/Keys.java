@@ -28,11 +28,11 @@ public class Keys {
     ///<summary>
     ///BACKSPACE key
     ///</summary>
-    public static int  BACK = 0x08;
+    public static final int  BACK = 0x08;
     ///<summary>
     ///TAB key
     ///</summary>
-    public static int  TAB = 0x09;
+    public static final int  TAB = 0x09;
     ///<summary>
     ///CLEAR key
     ///</summary>
@@ -40,7 +40,7 @@ public class Keys {
     ///<summary>
     ///ENTER key
     ///</summary>
-    public static int  RETURN = 0x0D;
+    public static final int  RETURN = 0x0D;
     ///<summary>
     ///SHIFT key
     ///</summary>
@@ -60,7 +60,7 @@ public class Keys {
     ///<summary>
     ///CAPS LOCK key
     ///</summary>
-    public static int  CAPITAL = 0x14;
+    public static final int  CAPITAL = 0x14;
     ///<summary>
     ///Input Method Editor (IME) Kana mode
     ///</summary>
@@ -108,7 +108,7 @@ public class Keys {
     ///<summary>
     ///SPACEBAR
     ///</summary>
-    public static int  SPACE = 0x20;
+    public static final int  SPACE = 0x20;
     ///<summary>
     ///PAGE UP key
     ///</summary>
@@ -172,151 +172,151 @@ public class Keys {
     ///<summary>
     ///0 key
     ///</summary>
-    public static int  KEY_0 = 0x30;
+    public static final int  KEY_0 = 0x30;
     ///<summary>
     ///1 key
     ///</summary>
-    public static int  KEY_1 = 0x31;
+    public static final int  KEY_1 = 0x31;
     ///<summary>
     ///2 key
     ///</summary>
-    public static int  KEY_2 = 0x32;
+    public static final int  KEY_2 = 0x32;
     ///<summary>
     ///3 key
     ///</summary>
-    public static int  KEY_3 = 0x33;
+    public static final int  KEY_3 = 0x33;
     ///<summary>
     ///4 key
     ///</summary>
-    public static int  KEY_4 = 0x34;
+    public static final int  KEY_4 = 0x34;
     ///<summary>
     ///5 key
     ///</summary>
-    public static int  KEY_5 = 0x35;
+    public static final int  KEY_5 = 0x35;
     ///<summary>
     ///6 key
     ///</summary>
-    public static int  KEY_6 = 0x36;
+    public static final int  KEY_6 = 0x36;
     ///<summary>
     ///7 key
     ///</summary>
-    public static int  KEY_7 = 0x37;
+    public static final int  KEY_7 = 0x37;
     ///<summary>
     ///8 key
     ///</summary>
-    public static int  KEY_8 = 0x38;
+    public static final int  KEY_8 = 0x38;
     ///<summary>
     ///9 key
     ///</summary>
-    public static int  KEY_9 = 0x39;
+    public static final int  KEY_9 = 0x39;
     ///<summary>
     ///A key
     ///</summary>
-    public static int  KEY_A = 0x41;
+    public static final int  KEY_A = 0x41;
     ///<summary>
     ///B key
     ///</summary>
-    public static int  KEY_B = 0x42;
+    public static final int  KEY_B = 0x42;
     ///<summary>
     ///C key
     ///</summary>
-    public static int  KEY_C = 0x43;
+    public static final int  KEY_C = 0x43;
     ///<summary>
     ///D key
     ///</summary>
-    public static int  KEY_D = 0x44;
+    public static final int  KEY_D = 0x44;
     ///<summary>
     ///E key
     ///</summary>
-    public static int  KEY_E = 0x45;
+    public static final int  KEY_E = 0x45;
     ///<summary>
     ///F key
     ///</summary>
-    public static int  KEY_F = 0x46;
+    public static final int  KEY_F = 0x46;
     ///<summary>
     ///G key
     ///</summary>
-    public static int  KEY_G = 0x47;
+    public static final int  KEY_G = 0x47;
     ///<summary>
     ///H key
     ///</summary>
-    public static int  KEY_H = 0x48;
+    public static final int  KEY_H = 0x48;
     ///<summary>
     ///I key
     ///</summary>
-    public static int  KEY_I = 0x49;
+    public static final int  KEY_I = 0x49;
     ///<summary>
     ///J key
     ///</summary>
-    public static int  KEY_J = 0x4A;
+    public static final int  KEY_J = 0x4A;
     ///<summary>
     ///K key
     ///</summary>
-    public static int  KEY_K = 0x4B;
+    public static final int  KEY_K = 0x4B;
     ///<summary>
     ///L key
     ///</summary>
-    public static int  KEY_L = 0x4C;
+    public static final int  KEY_L = 0x4C;
     ///<summary>
     ///M key
     ///</summary>
-    public static int  KEY_M = 0x4D;
+    public static final int  KEY_M = 0x4D;
     ///<summary>
     ///N key
     ///</summary>
-    public static int  KEY_N = 0x4E;
+    public static final int  KEY_N = 0x4E;
     ///<summary>
     ///O key
     ///</summary>
-    public static int   KEY_O = 0x4F;
+    public static final int   KEY_O = 0x4F;
     ///<summary>
     ///P key
     ///</summary>
-    public static int  KEY_P = 0x50;
+    public static final int  KEY_P = 0x50;
     ///<summary>
     ///Q key
     ///</summary>
-    public static int  KEY_Q = 0x51;
+    public static final int  KEY_Q = 0x51;
     ///<summary>
     ///R key
     ///</summary>
-    public static int  KEY_R = 0x52;
+    public static final int  KEY_R = 0x52;
     ///<summary>
     ///S key
     ///</summary>
-    public static int  KEY_S = 0x53;
+    public static final int  KEY_S = 0x53;
     ///<summary>
     ///T key
     ///</summary>
-    public static int  KEY_T = 0x54;
+    public static final int  KEY_T = 0x54;
     ///<summary>
     ///U key
     ///</summary>
-    public static int  KEY_U = 0x55;
+    public static final int  KEY_U = 0x55;
     ///<summary>
     ///V key
     ///</summary>
-    public static int  KEY_V = 0x56;
+    public static final int  KEY_V = 0x56;
     ///<summary>
     ///W key
     ///</summary>
-    public static int  KEY_W = 0x57;
+    public static final int  KEY_W = 0x57;
     ///<summary>
     ///X key
     ///</summary>
-    public static int  KEY_X = 0x58;
+    public static final int  KEY_X = 0x58;
     ///<summary>
     ///Y key
     ///</summary>
-    public static int  KEY_Y = 0x59;
+    public static final int  KEY_Y = 0x59;
     ///<summary>
     ///Z key
     ///</summary>
-    public static int  KEY_Z = 0x5A;
+    public static final int  KEY_Z = 0x5A;
     ///<summary>
     ///Left Windows key (Microsoft Natural keyboard)
     ///</summary>
-    public static int  LWIN = 0x5B;
+    public static final int  LWIN = 0x5B;
     ///<summary>
     ///Right Windows key (Natural keyboard)
     ///</summary>
@@ -324,7 +324,7 @@ public class Keys {
     ///<summary>
     ///Applications key (Natural keyboard)
     ///</summary>
-    public static int  APPS = 0x5D;
+    public static final int  APPS = 0x5D;
     ///<summary>
     ///Computer Sleep key
     ///</summary>
@@ -500,27 +500,27 @@ public class Keys {
     ///<summary>
     ///Left SHIFT key
     ///</summary>
-    public static int LSHIFT = 0xA0;
+    public static final int LSHIFT = 0xA0;
     ///<summary>
     ///Right SHIFT key
     ///</summary>
-    public static int RSHIFT = 0xA1;
+    public static final int RSHIFT = 0xA1;
     ///<summary>
     ///Left CONTROL key
     ///</summary>
-    public static int LCONTROL = 0xA2;
+    public static final int LCONTROL = 0xA2;
     ///<summary>
     ///Right CONTROL key
     ///</summary>
-    public static int RCONTROL = 0xA3;
+    public static final int RCONTROL = 0xA3;
     ///<summary>
     ///Left MENU key
     ///</summary>
-    public static int LMENU = 0xA4;
+    public static final int LMENU = 0xA4;
     ///<summary>
     ///Right MENU key
     ///</summary>
-    public static int RMENU = 0xA5;
+    public static final int RMENU = 0xA5;
     ///<summary>
     ///Windows 2000/XP: Browser Back key
     ///</summary>
@@ -596,47 +596,47 @@ public class Keys {
     ///<summary>
     ///Used for miscellaneous characters; it can vary by keyboard.
     ///</summary>
-    public static int OEM_1 = 0xBA;
+    public static final int OEM_1 = 0xBA;
     ///<summary>
     ///Windows 2000/XP: For any country/region; the '+' key
     ///</summary>
-    public static int OEM_PLUS = 0xBB;
+    public static final int OEM_PLUS = 0xBB;
     ///<summary>
     ///Windows 2000/XP: For any country/region; the ';' key
     ///</summary>
-    public static int OEM_COMMA = 0xBC;
+    public static final int OEM_COMMA = 0xBC;
     ///<summary>
     ///Windows 2000/XP: For any country/region; the '-' key
     ///</summary>
-    public static int OEM_MINUS = 0xBD;
+    public static final int OEM_MINUS = 0xBD;
     ///<summary>
     ///Windows 2000/XP: For any country/region; the '.' key
     ///</summary>
-    public static int OEM_PERIOD = 0xBE;
+    public static final int OEM_PERIOD = 0xBE;
     ///<summary>
     ///Used for miscellaneous characters; it can vary by keyboard.
     ///</summary>
-    public static int OEM_2 = 0xBF;
+    public static final int OEM_2 = 0xBF;
     ///<summary>
     ///Used for miscellaneous characters; it can vary by keyboard.
     ///</summary>
-    public static int OEM_3 = 0xC0;
+    public static final int OEM_3 = 0xC0;
     ///<summary>
     ///Used for miscellaneous characters; it can vary by keyboard.
     ///</summary>
-    public static int OEM_4 = 0xDB;
+    public static final int OEM_4 = 0xDB;
     ///<summary>
     ///Used for miscellaneous characters; it can vary by keyboard.
     ///</summary>
-    public static int OEM_5 = 0xDC;
+    public static final int OEM_5 = 0xDC;
     ///<summary>
     ///Used for miscellaneous characters; it can vary by keyboard.
     ///</summary>
-    public static int OEM_6 = 0xDD;
+    public static final int OEM_6 = 0xDD;
     ///<summary>
     ///Used for miscellaneous characters; it can vary by keyboard.
     ///</summary>
-    public static int OEM_7 = 0xDE;
+    public static final int OEM_7 = 0xDE;
     ///<summary>
     ///Used for miscellaneous characters; it can vary by keyboard.
     ///</summary>
@@ -644,7 +644,7 @@ public class Keys {
     ///<summary>
     ///Windows 2000/XP: Either the angle bracket key or the backslash key on the RT 102-key keyboard
     ///</summary>
-    public static int OEM_102 = 0xE2;
+    public static final int OEM_102 = 0xE2;
     ///<summary>
     ///Windows 95/98/Me; Windows NT 4.0; Windows 2000/XP: IME PROCESS key
     ///</summary>
@@ -682,7 +682,7 @@ public class Keys {
     ///<summary>
     ///Reserved
     ///</summary>
-    public static int NONAME = 0xFC;
+    public static final int NONAME = 0xFC;
     ///<summary>
     ///PA1 key
     ///</summary>

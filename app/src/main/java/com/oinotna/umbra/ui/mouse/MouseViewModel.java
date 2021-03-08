@@ -3,15 +3,9 @@ package com.oinotna.umbra.ui.mouse;
 import android.hardware.SensorEvent;
 import android.view.MotionEvent;
 
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.oinotna.umbra.db.ServerPc;
-import com.oinotna.umbra.input.InputManager;
-import com.oinotna.umbra.input.MySocket;
 import com.oinotna.umbra.input.mouse.Mouse;
-import com.oinotna.umbra.input.mouse.MouseControl;
 
 public class MouseViewModel extends ViewModel{
 

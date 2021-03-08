@@ -32,15 +32,18 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.preference.PreferenceManager
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.oinotna.umbra.input.MySocket
+import com.oinotna.umbra.ui.tutorial.TutorialActivity
 import java.io.IOException
 import java.security.GeneralSecurityException
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
+
 
 /**
  * An activity that inflates a layout that has a [BottomNavigationView].
@@ -75,7 +78,14 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         if (savedInstanceState == null) {
-            setupBottomNavigationBar()
+            val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+            if(!prefs.getBoolean("tutorial", false)){
+                val tutorialActivity = Intent(applicationContext, TutorialActivity::class.java)
+                startActivity(tutorialActivity)
+                finish()
+            }
+            else
+                setupBottomNavigationBar()
         } // Else, need to wait for onRestoreInstanceState
         secretKeyViewModel=ViewModelProvider(this).get(SecretKeyViewModel::class.java)
         secretKeyViewModel.aesKey=getAESKey()
@@ -169,9 +179,8 @@ class MainActivity : AppCompatActivity() {
                 val keygen = KeyGenerator.getInstance("AES")
                 keygen.init(256)
                 val key = keygen.generateKey()
-                val encoded: String
                 // get base64 encoded version of the key
-                encoded = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val encoded: String = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     java.util.Base64.getEncoder().encodeToString(key.encoded)
                 } else {
                     Base64.encodeToString(key.encoded, Base64.DEFAULT)

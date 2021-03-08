@@ -8,7 +8,7 @@ import java.net.DatagramSocket;
  * Mi permette di essere interrotto se è bloccato sulla read
  */
 public class MyInterruptThread extends Thread {
-    private DatagramSocket socket;
+    private final DatagramSocket socket;
 
     public MyInterruptThread(@Nullable RunnableWithSocket target) {
         super(target);

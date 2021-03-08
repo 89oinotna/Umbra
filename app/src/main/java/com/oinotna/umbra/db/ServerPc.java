@@ -23,7 +23,7 @@ public class ServerPc {
     @ColumnInfo(name = "password")
     private String password;
 
-    public ServerPc(String name, String ip){
+    public ServerPc(@NotNull String name, @NotNull String ip){
         this.name=name;
         this.ip=ip;
     }

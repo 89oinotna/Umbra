@@ -1,7 +1,5 @@
 package com.oinotna.umbra.input;
 
-import com.oinotna.umbra.input.mouse.Mouse;
-
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -44,6 +42,7 @@ public abstract class Command {
         this.type=type;
     }
 
+    //possible todo use reflection?
     public abstract byte[] getCommandBytes();
 
     public byte getType(){
