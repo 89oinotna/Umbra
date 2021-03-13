@@ -26,7 +26,7 @@
             android:id="@+id/pc_name"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:drawableTop="@drawable/card_view_computer"
+            app:drawableTopCompat="@drawable/card_view_computer"
             android:textAlignment="center"
             android:textSize="12sp" />
 

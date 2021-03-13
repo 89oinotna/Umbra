@@ -229,8 +229,8 @@ public class Mouse implements MouseControl {
        /* final float x=event.values[0];  //screen y
         final float z=event.values[2];  //screen x
         */
-        final float x=event.values[2];
-        final float y=event.values[0];
+        final float x=event.values[1];
+        final float y=event.values[2];
         //Log.d("SENSOR", x+" , "+y);
         if(lastSensor[0]==-1 || lastSensor[0]==0){
             lastSensor[0]=x;
@@ -244,7 +244,8 @@ public class Mouse implements MouseControl {
         if(Math.abs(Math.abs(deltaX)-event.sensor.getResolution())>event.sensor.getResolution() &&
                 Math.abs(Math.abs(deltaY)-event.sensor.getResolution())>event.sensor.getResolution() &&
                 ((int)(deltaX*sensorSensitivity)!=0 || (int)(deltaY*sensorSensitivity)!=0))
-            InputManager.push(new MouseCommand(SENSOR_MOVE, new float[]{deltaX * sensorSensitivity * -1, deltaY * sensorSensitivity * -1}));
+            //idk why x,y are inverted
+            InputManager.push(new MouseCommand(SENSOR_MOVE, new float[]{deltaY * sensorSensitivity * -1, deltaX * sensorSensitivity * -1}));
     }
 
     public void setSensorSensitivity(int sensorSensitivity) {

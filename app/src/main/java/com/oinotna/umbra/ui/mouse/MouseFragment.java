@@ -110,22 +110,16 @@ public class MouseFragment extends Fragment implements SensorEventListener, View
     @Override
     public boolean onTouch(View v, MotionEvent e) {
         v.performClick();
-        switch (v.getId()){
-            case R.id.btn_mouse_left:
-                mouseViewModel.mouse(Mouse.Type.LEFT, e);
-                break;
-            case R.id.btn_mouse_right:
-                mouseViewModel.mouse(Mouse.Type.RIGHT, e);
-                break;
-            case R.id.btn_mouse_wheel:
-                mouseViewModel.mouse(Mouse.Type.WHEEL, e);
-                break;
-            case R.id.btn_mouse_pad:
-                mouseViewModel.mouse(Mouse.Type.PAD, e);
-                break;
-            default:
-                return false;
-        }
+        int id=v.getId();
+        if(id==R.id.btn_mouse_left)
+            mouseViewModel.mouse(Mouse.Type.LEFT, e);
+        else if(id== R.id.btn_mouse_right)
+            mouseViewModel.mouse(Mouse.Type.RIGHT, e);
+        else if(id== R.id.btn_mouse_wheel)
+            mouseViewModel.mouse(Mouse.Type.WHEEL, e);
+        else if(id== R.id.btn_mouse_pad)
+            mouseViewModel.mouse(Mouse.Type.PAD, e);
+
         return false; //for button press animation
     }
 

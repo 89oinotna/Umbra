@@ -44,11 +44,11 @@
         android:id="@+id/imageView3"
         android:layout_width="260dp"
         android:layout_height="230dp"
-        android:src="@drawable/_974"
+        android:contentDescription="image"
         app:layout_constraintBottom_toTopOf="@+id/textView2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:srcCompat="@drawable/_974" />
+        android:src="@drawable/ic_snd"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

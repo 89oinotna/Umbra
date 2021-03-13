@@ -4,8 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.Lifecycle;
 import androidx.preference.PreferenceManager;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
@@ -27,14 +25,6 @@ public class TutorialActivity extends AppCompatActivity {
     public static class TutorialAdapter extends FragmentStateAdapter {
         public TutorialAdapter(@NonNull FragmentActivity fragmentActivity) {
             super(fragmentActivity);
-        }
-
-        public TutorialAdapter(@NonNull Fragment fragment) {
-            super(fragment);
-        }
-
-        public TutorialAdapter(@NonNull FragmentManager fragmentManager, @NonNull Lifecycle lifecycle) {
-            super(fragmentManager, lifecycle);
         }
 
         @NonNull

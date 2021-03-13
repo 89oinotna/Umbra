@@ -24,13 +24,13 @@
 
     <ImageView
         android:id="@+id/imageView2"
-        android:layout_width="220dp"
-        android:layout_height="343dp"
-        android:src="@drawable/_5_03"
+        android:layout_width="245dp"
+        android:layout_height="260dp"
+        android:contentDescription="image"
+        android:src="@drawable/ic_trd"
         app:layout_constraintBottom_toTopOf="@+id/textView4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:srcCompat="@drawable/_5_03" />
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
