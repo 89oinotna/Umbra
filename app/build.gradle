@@ -9,8 +9,8 @@ android {
         applicationId "com.oinotna.umbra"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 7
-        versionName "2.0.1"
+        versionCode 8
+        versionName "2.0.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
